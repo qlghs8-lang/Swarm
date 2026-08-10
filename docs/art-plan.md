@@ -54,6 +54,7 @@
 시간이 남을 경우에만 진행하는 스트레치 목표. 우선순위는 낮음 — 게임 완성이 우선.
 
 - 대상: 플레이어 캐릭터 1종 정도만 (가장 자주 보이는 스프라이트라 교체 효과가 가장 큼)
-- 툴: Aseprite(유료, `com.unity.2d.aseprite` 임포터 패키지 설치되어 있어 `.aseprite` 파일 바로 임포트 가능) 또는 무료 대안(Piskel, LibreSprite)
-- 캔버스 크기: 16×16 또는 24×24px, 팔레트 4~8색으로 제한
+- 툴: PixelLab MCP(생성) + Aseprite(유료, `com.unity.2d.aseprite` 임포터 패키지 설치되어 있어 `.aseprite` 파일 바로 임포트 가능) + Aseprite MCP(후처리)
+- 캔버스 크기: 소스 해상도 64px 안팎(캐릭터 콘텐츠 기준). 카메라 orthographic size 6, 플레이어 콜라이더 지름 1 unit 기준으로 Unity 기본 PPU(100)와 맞아떨어짐 — 16×16/24×24px는 AI 생성 디테일(갑옷 플레이트, 망토 주름 등)이 다 뭉개져서 부적합
+- 렌더링 방식: 정면(south) 스프라이트 1개 + `SpriteRenderer.flipX`로 좌우만 전환 (`PlayerController.cs`가 이미 이 패턴 사용 중 — 8방향 회전 스프라이트 불필요)
 - Aseprite → Unity 연동: 태그별(`Idle`, `Walk`)로 애니메이션 나눠 작업 → Import Settings에서 `Generate Animation Clips` 체크 → 태그별 AnimationClip 자동 생성

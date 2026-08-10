@@ -9,8 +9,11 @@ namespace Swarm.Player
         [SerializeField] private float moveSpeed = 4f;
         [SerializeField] private VirtualJoystick joystick;
 
+        private static readonly int IsMovingParam = Animator.StringToHash("IsMoving");
+
         private Rigidbody2D _rigidbody;
         private SpriteRenderer _spriteRenderer;
+        private Animator _animator;
         private PlayerInputActions _inputActions;
         private PlayerStats _stats;
         private Vector2 _moveInput;
@@ -20,7 +23,9 @@ namespace Swarm.Player
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
+            _rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
             _spriteRenderer = GetComponent<SpriteRenderer>();
+            _animator = GetComponent<Animator>();
             _stats = GetComponent<PlayerStats>();
             _inputActions = new PlayerInputActions();
         }
@@ -54,6 +59,11 @@ namespace Swarm.Player
             if (_spriteRenderer != null && _moveInput.x != 0f)
             {
                 _spriteRenderer.flipX = _moveInput.x < 0f;
+            }
+
+            if (_animator != null)
+            {
+                _animator.SetBool(IsMovingParam, _moveInput != Vector2.zero);
             }
         }
 
