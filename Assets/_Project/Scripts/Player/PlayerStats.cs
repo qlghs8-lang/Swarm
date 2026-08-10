@@ -10,6 +10,13 @@ namespace Swarm.Player
 
     public class PlayerStats : MonoBehaviour
     {
+        private Collider2D _collider;
+
+        // Weapon origin for targeting/AOE/indicators. Uses the actual hit collider's
+        // center rather than transform.position, since the collider can be offset from
+        // it (e.g. raised to chest height) and the two are not interchangeable.
+        public Vector2 AttackOrigin => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+
         public float AttackPower { get; private set; }
         public float MoveSpeedBonus { get; private set; }
         public float Luck { get; private set; }
@@ -35,6 +42,11 @@ namespace Swarm.Player
         public float CooldownReduction => _cooldownReduction + _tempCooldownReduction;
         public float MagicPenetration => _magicPenetration + _tempMagicPenetration;
         public float PermanentCooldownReduction => _cooldownReduction;
+
+        private void Awake()
+        {
+            _collider = GetComponent<Collider2D>();
+        }
 
         private void Update()
         {

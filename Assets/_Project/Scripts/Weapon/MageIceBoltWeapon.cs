@@ -32,15 +32,18 @@ namespace Swarm.Weapon
             _timer += Time.deltaTime;
             if (_timer < effectiveInterval) return;
 
-            _timer = 0f;
-            TryFire();
+            if (TryFire())
+            {
+                _timer = 0f;
+            }
         }
 
-        private void TryFire()
+        private bool TryFire()
         {
+            var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var boltCount = Mathf.Max(1, 1 + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var targets = EnemyTargeting.FindMultiple(transform.position, data.Range, boltCount);
-            if (targets.Count == 0) return;
+            var targets = EnemyTargeting.FindMultiple(origin, data.Range, boltCount);
+            if (targets.Count == 0) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
@@ -50,14 +53,16 @@ namespace Swarm.Weapon
 
             for (var i = 0; i < targets.Count; i++)
             {
-                SpawnBolt(targets[i], damage, damageType, penetration, maxJumps);
+                SpawnBolt(origin, targets[i], damage, damageType, penetration, maxJumps);
             }
+
+            return true;
         }
 
-        private void SpawnBolt(Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps)
+        private void SpawnBolt(Vector2 origin, Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps)
         {
             var boltObject = new GameObject("IceBolt (Temp)");
-            boltObject.transform.position = transform.position;
+            boltObject.transform.position = origin;
 
             var spriteRenderer = boltObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = boltSprite;

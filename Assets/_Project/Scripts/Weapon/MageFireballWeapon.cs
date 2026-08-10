@@ -36,15 +36,18 @@ namespace Swarm.Weapon
             _timer += Time.deltaTime;
             if (_timer < effectiveInterval) return;
 
-            _timer = 0f;
-            TryFire();
+            if (TryFire())
+            {
+                _timer = 0f;
+            }
         }
 
-        private void TryFire()
+        private bool TryFire()
         {
+            var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var count = Mathf.Max(1, data.ProjectileCount + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var targets = EnemyTargeting.FindMultiple(transform.position, data.Range, count);
-            if (targets.Count == 0) return;
+            var targets = EnemyTargeting.FindMultiple(origin, data.Range, count);
+            if (targets.Count == 0) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
@@ -54,14 +57,16 @@ namespace Swarm.Weapon
             for (var i = 0; i < count; i++)
             {
                 var target = targets[i % targets.Count];
-                var direction = ((Vector2)target.position - (Vector2)transform.position).normalized;
+                var direction = ((Vector2)target.position - origin).normalized;
 
-                var instance = _pool.Get(transform.position, Quaternion.identity);
+                var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
                     projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, PierceCount, damageType, penetration);
                 }
             }
+
+            return true;
         }
     }
 }

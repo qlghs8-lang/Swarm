@@ -65,27 +65,30 @@ namespace Swarm.Weapon
             _timer += Time.deltaTime;
             if (_timer < effectiveInterval) return;
 
-            _timer = 0f;
-            Attack();
+            if (Attack())
+            {
+                _timer = 0f;
+            }
         }
 
-        private void Attack()
+        private bool Attack()
         {
+            var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var radius = data.Radius * (1f + (_stats != null ? _stats.AreaSizeBonus : 0f));
-            var target = EnemyTargeting.FindNearest(transform.position, radius);
-            if (target == null) return;
+            var target = EnemyTargeting.FindNearest(origin, radius);
+            if (target == null) return false;
 
-            var facing = ((Vector2)target.position - (Vector2)transform.position).normalized;
+            var facing = ((Vector2)target.position - origin).normalized;
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
             var forwardDotThreshold = Mathf.Cos(forwardAngleDegrees * 0.5f * Mathf.Deg2Rad);
 
-            var hits = Physics2D.OverlapCircleAll(transform.position, radius);
+            var hits = Physics2D.OverlapCircleAll(origin, radius);
             foreach (var hit in hits)
             {
                 if (!hit.CompareTag("Enemy")) continue;
 
-                var toEnemy = ((Vector2)hit.transform.position - (Vector2)transform.position).normalized;
+                var toEnemy = ((Vector2)hit.transform.position - origin).normalized;
                 if (Vector2.Dot(facing, toEnemy) < forwardDotThreshold) continue;
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
@@ -94,14 +97,15 @@ namespace Swarm.Weapon
                 }
             }
 
-            ShowIndicator(facing, radius);
+            ShowIndicator(origin, facing, radius);
+            return true;
         }
 
-        private void ShowIndicator(Vector2 facing, float radius)
+        private void ShowIndicator(Vector2 origin, Vector2 facing, float radius)
         {
             var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg;
             BuildFanMesh(radius);
-            _indicator.position = transform.position;
+            _indicator.position = origin;
             _indicator.rotation = Quaternion.Euler(0f, 0f, angle);
             _indicator.gameObject.SetActive(true);
             _indicatorTimer = IndicatorDuration;

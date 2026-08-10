@@ -37,17 +37,20 @@ namespace Swarm.Weapon
             _timer += Time.deltaTime;
             if (_timer < effectiveInterval) return;
 
-            _timer = 0f;
-            TryFire();
+            if (TryFire())
+            {
+                _timer = 0f;
+            }
         }
 
-        private void TryFire()
+        private bool TryFire()
         {
+            var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var areaMultiplier = 1f + (_stats != null ? _stats.AreaSizeBonus : 0f);
 
             var meteorCount = Mathf.Max(1, 1 + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var targets = EnemyTargeting.FindMultiple(transform.position, detectRange, meteorCount);
-            if (targets.Count == 0) return;
+            var targets = EnemyTargeting.FindMultiple(origin, detectRange, meteorCount);
+            if (targets.Count == 0) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var impactDamage = Mathf.RoundToInt(data.Damage * damageMultiplier);
@@ -61,6 +64,8 @@ namespace Swarm.Weapon
             {
                 SpawnMeteor(target.position, impactRadius, impactDamage, damageType, penetration, patchRadius, burnTick);
             }
+
+            return true;
         }
 
         private void SpawnMeteor(Vector2 targetPosition, float impactRadius, int impactDamage, DamageStatType damageType,

@@ -33,17 +33,20 @@ namespace Swarm.Weapon
             _timer += Time.deltaTime;
             if (_timer < effectiveInterval) return;
 
-            _timer = 0f;
-            Attack();
+            if (Attack())
+            {
+                _timer = 0f;
+            }
         }
 
-        private void Attack()
+        private bool Attack()
         {
+            var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var radius = data.Radius * (1f + (_stats != null ? _stats.AreaSizeBonus : 0f));
-            var target = EnemyTargeting.FindNearest(transform.position, radius);
-            if (target == null) return;
+            var target = EnemyTargeting.FindNearest(origin, radius);
+            if (target == null) return false;
 
-            if (!target.TryGetComponent<IDamageable>(out var damageable)) return;
+            if (!target.TryGetComponent<IDamageable>(out var damageable)) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
@@ -69,6 +72,8 @@ namespace Swarm.Weapon
                 if (_stats != null) _stats.IncreaseAttackPower(attackPowerPerKill);
                 if (_health != null) _health.IncreaseMaxHealth(maxHealthPerKill);
             }
+
+            return true;
         }
     }
 }
