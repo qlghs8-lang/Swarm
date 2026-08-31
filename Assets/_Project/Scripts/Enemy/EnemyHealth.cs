@@ -176,9 +176,10 @@ namespace Swarm.Enemy
             if (damageNumberPrefab == null) return;
 
             var jitter = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.1f, 0.1f), 0f);
-            var instance = Instantiate(damageNumberPrefab, transform.position + Vector3.up * 0.5f + jitter, Quaternion.identity);
+            var instance = SharedObjectPool.Get(damageNumberPrefab, transform.position + Vector3.up * 0.5f + jitter, Quaternion.identity);
             if (instance.TryGetComponent<DamageNumber>(out var damageNumber))
             {
+                damageNumber.SetSourcePrefab(damageNumberPrefab);
                 damageNumber.Setup(amount);
             }
         }
@@ -190,16 +191,21 @@ namespace Swarm.Enemy
 
             if (experiencePickupPrefab != null)
             {
-                var pickup = Instantiate(experiencePickupPrefab, GetDropPosition(), Quaternion.identity);
+                var pickup = SharedObjectPool.Get(experiencePickupPrefab, GetDropPosition(), Quaternion.identity);
                 if (pickup.TryGetComponent<ExperiencePickup>(out var experiencePickup))
                 {
+                    experiencePickup.SetSourcePrefab(experiencePickupPrefab);
                     experiencePickup.SetAmount(experienceReward);
                 }
             }
 
             if (goldPickupPrefab != null && Random.value < goldDropChance)
             {
-                Instantiate(goldPickupPrefab, GetDropPosition(), Quaternion.identity);
+                var goldInstance = SharedObjectPool.Get(goldPickupPrefab, GetDropPosition(), Quaternion.identity);
+                if (goldInstance.TryGetComponent<GoldPickup>(out var goldPickup))
+                {
+                    goldPickup.SetSourcePrefab(goldPickupPrefab);
+                }
             }
 
             if (_pool != null)

@@ -47,9 +47,12 @@ namespace Swarm.Weapon
 
             var cooldownMultiplier = CooldownMultiplier * (1f - (_stats != null ? _stats.CooldownReduction : 0f));
             var rotationSpeedMultiplier = 1f / Mathf.Max(0.1f, cooldownMultiplier);
-            _sharedAngleDegrees += data.AngularSpeed * rotationSpeedMultiplier * Time.deltaTime;
-
             var areaMultiplier = 1f + (_stats != null ? _stats.AreaSizeBonus : 0f);
+            // Divide by areaMultiplier so tangential speed (angularSpeed * radius) stays constant
+            // as range-increase passives grow the orbit radius, instead of the blades visibly
+            // speeding up.
+            _sharedAngleDegrees += data.AngularSpeed * rotationSpeedMultiplier / areaMultiplier * Time.deltaTime;
+
             var orbitRadius = data.OrbitRadius * areaMultiplier;
             var hitRadius = data.HitRadius * areaMultiplier;
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);

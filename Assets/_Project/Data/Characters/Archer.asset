@@ -11,12 +11,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ae79aa75b5640d88d636dbcbadce4bf, type: 3}
   m_Name: Archer
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: archer
-  displayName: 궁수
+  displayName: "\uAD81\uC218"
   unlockCost: 100
   damageStatType: 0
   maxHealthBonus: 0
   defenseBonus: 0.05
   moveSpeedBonus: 0.15
   cooldownReductionBonus: 0.1
+  defaultSprite: {fileID: -2110994483691734950, guid: bff55abab6e3e4c4baa1851fdc49521f, type: 3}
+  animatorController: {fileID: 9100000, guid: 4763bc9778d39234bbf789e887f84b44, type: 2}

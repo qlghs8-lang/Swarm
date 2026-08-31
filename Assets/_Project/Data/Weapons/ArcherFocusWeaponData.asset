@@ -11,11 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8bd0e6dc86641ddb9cf7ced448c7357, type: 3}
   m_Name: ArcherFocusWeaponData
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   damage: 16
   attackInterval: 1
   projectileSpeed: 12
-  projectilePrefab: {fileID: 1000000000000000001, guid: 22637c666f844f1585f4123bbcb6476c, type: 3}
+  projectilePrefab: {fileID: 6724532173958371425, guid: df1860d981200784c9bb15b19cd473e8, type: 3}
   range: 7
   projectileCount: 3
   spreadAngleDegrees: 0

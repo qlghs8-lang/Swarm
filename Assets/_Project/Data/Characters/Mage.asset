@@ -11,12 +11,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0209cd21b90e4c289081c0a21b29eba7, type: 3}
   m_Name: Mage
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: mage
-  displayName: 마법사
+  displayName: "\uB9C8\uBC95\uC0AC"
   unlockCost: 150
   damageStatType: 1
   maxHealthBonus: -20
   defenseBonus: -0.1
   moveSpeedBonus: 0
   cooldownReductionBonus: 0
+  defaultSprite: {fileID: 8891048352657867906, guid: a2ad634d179f3ff4d90b423a12c7fe3f, type: 3}
+  animatorController: {fileID: 9100000, guid: 7bb772e981406ea44b035d6cfd29cfa5, type: 2}

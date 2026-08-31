@@ -14,6 +14,8 @@ namespace Swarm.Game
         [SerializeField] private float defenseBonus;
         [SerializeField] private float moveSpeedBonus;
         [SerializeField] private float cooldownReductionBonus;
+        [SerializeField] private Sprite defaultSprite;
+        [SerializeField] private RuntimeAnimatorController animatorController;
 
         private string UnlockedKey => $"Swarm_CharacterUnlocked_{id}";
 
@@ -36,6 +38,7 @@ namespace Swarm.Game
         public void ApplyToPlayer(GameObject player)
         {
             DisableAllWeapons(player);
+            ApplyVisuals(player);
 
             if (player.TryGetComponent<PlayerStats>(out var stats))
             {
@@ -52,6 +55,26 @@ namespace Swarm.Game
 
             MarkAvailableWeapons(player);
             UnlockStartingWeapon(player);
+        }
+
+        private void ApplyVisuals(GameObject player)
+        {
+            if (defaultSprite != null && player.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
+            {
+                spriteRenderer.sprite = defaultSprite;
+                spriteRenderer.color = Color.white;
+            }
+
+            if (animatorController != null)
+            {
+                if (!player.TryGetComponent<Animator>(out var animator))
+                {
+                    animator = player.AddComponent<Animator>();
+                }
+
+                animator.runtimeAnimatorController = animatorController;
+                animator.applyRootMotion = false;
+            }
         }
 
         protected static void DisableAllWeapons(GameObject player)

@@ -1,3 +1,4 @@
+using Swarm.Weapon;
 using UnityEngine;
 
 namespace Swarm.UI
@@ -9,13 +10,16 @@ namespace Swarm.UI
         [SerializeField] private float lifetime = 0.6f;
 
         private TextMesh _textMesh;
+        private Color _originalColor;
         private Color _startColor;
         private float _elapsed;
+        private GameObject _sourcePrefab;
 
         private void Awake()
         {
             _textMesh = GetComponent<TextMesh>();
-            _startColor = _textMesh.color;
+            _originalColor = _textMesh.color;
+            _startColor = _originalColor;
 
             if (TryGetComponent<MeshRenderer>(out var meshRenderer) && _textMesh.font != null)
             {
@@ -23,9 +27,21 @@ namespace Swarm.UI
             }
         }
 
+        private void OnEnable()
+        {
+            _elapsed = 0f;
+        }
+
+        public void SetSourcePrefab(GameObject prefab)
+        {
+            _sourcePrefab = prefab;
+        }
+
         public void Setup(int amount)
         {
             _textMesh.text = amount.ToString();
+            _startColor = _originalColor;
+            _textMesh.color = _startColor;
         }
 
         public void Setup(string text, Color color)
@@ -45,7 +61,7 @@ namespace Swarm.UI
 
             if (_elapsed >= lifetime)
             {
-                Destroy(gameObject);
+                SharedObjectPool.Release(_sourcePrefab, gameObject);
             }
         }
     }

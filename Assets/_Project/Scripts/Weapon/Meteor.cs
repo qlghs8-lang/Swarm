@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
 
@@ -5,6 +6,9 @@ namespace Swarm.Weapon
 {
     public class Meteor : MonoBehaviour
     {
+        // Reused across calls: the old OverlapCircleAll allocated a new array every hit tick.
+        private readonly List<Collider2D> _hitBuffer = new();
+
         private const float ImpactDistance = 0.15f;
 
         private Vector2 _targetPosition;
@@ -14,6 +18,11 @@ namespace Swarm.Weapon
         private DamageStatType _damageType;
         private float _penetration;
         private System.Action<Vector2> _onImpact;
+
+        private SpriteRenderer _spriteRenderer;
+        private Sprite[] _travelFrames;
+        private float _travelFrameDuration;
+        private float _animTimer;
 
         public void Launch(Vector2 targetPosition, float fallOffset, float speed, float impactRadius,
             int impactDamage, DamageStatType damageType, float penetration, System.Action<Vector2> onImpact)
@@ -30,8 +39,17 @@ namespace Swarm.Weapon
             transform.position = targetPosition + offsetDirection * fallOffset;
         }
 
+        public void SetTravelAnimation(SpriteRenderer spriteRenderer, Sprite[] travelFrames, float travelFrameDuration)
+        {
+            _spriteRenderer = spriteRenderer;
+            _travelFrames = travelFrames;
+            _travelFrameDuration = travelFrameDuration;
+        }
+
         private void Update()
         {
+            UpdateTravelAnimation();
+
             var toTarget = _targetPosition - (Vector2)transform.position;
             if (toTarget.magnitude <= ImpactDistance)
             {
@@ -42,9 +60,19 @@ namespace Swarm.Weapon
             transform.position += (Vector3)(toTarget.normalized * (_speed * Time.deltaTime));
         }
 
+        private void UpdateTravelAnimation()
+        {
+            if (_travelFrames == null || _travelFrames.Length == 0 || _spriteRenderer == null) return;
+
+            _animTimer += Time.deltaTime;
+            var frameIndex = Mathf.Min(_travelFrames.Length - 1, Mathf.FloorToInt(_animTimer / _travelFrameDuration));
+            _spriteRenderer.sprite = _travelFrames[frameIndex];
+        }
+
         private void Impact()
         {
-            var hits = Physics2D.OverlapCircleAll(_targetPosition, _impactRadius);
+            EnemyTargeting.OverlapEnemies(_targetPosition, _impactRadius, _hitBuffer);
+            var hits = _hitBuffer;
             foreach (var hit in hits)
             {
                 if (!hit.CompareTag("Enemy")) continue;
@@ -52,6 +80,7 @@ namespace Swarm.Weapon
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
                     damageable.TakeDamage(_impactDamage, _damageType, _penetration);
+                    PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }
 

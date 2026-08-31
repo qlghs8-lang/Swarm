@@ -1,3 +1,4 @@
+using System.Collections;
 using Swarm.Player;
 using Swarm.UI;
 using UnityEngine;
@@ -17,15 +18,40 @@ namespace Swarm.Weapon
         [SerializeField] private float magicPenetrationBonusPerLevel = 0.05f;
         [SerializeField] private float cooldownReductionBonus = 0.25f;
         [SerializeField] private float buffDuration = 3f;
+        [SerializeField] private Sprite[] blessingEffectFrames;
+        [SerializeField] private float blessingEffectFrameDuration = 0.08f;
+        [SerializeField] private float blessingEffectScale = 1f;
 
         private float _timer;
         private PlayerStats _stats;
         private PlayerHealth _health;
+        private SpriteRenderer _blessingEffectRenderer;
+        private Coroutine _blessingEffectCoroutine;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
             _health = GetComponent<PlayerHealth>();
+            CreateBlessingEffectRenderer();
+        }
+
+        private void CreateBlessingEffectRenderer()
+        {
+            var effectObject = new GameObject("BlessingEffect (Temp)");
+            effectObject.transform.SetParent(transform);
+            effectObject.transform.localPosition = Vector3.zero;
+            effectObject.transform.localScale = Vector3.one * blessingEffectScale;
+            _blessingEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
+            _blessingEffectRenderer.sortingOrder = 2;
+            effectObject.SetActive(false);
+        }
+
+        private void OnDisable()
+        {
+            if (_blessingEffectRenderer != null)
+            {
+                _blessingEffectRenderer.gameObject.SetActive(false);
+            }
         }
 
         private void Update()
@@ -47,6 +73,7 @@ namespace Swarm.Weapon
             var amount = Mathf.RoundToInt(healAmount * DamageMultiplier);
             _health.Heal(amount);
             SpawnHealNumber(amount);
+            PlayBlessingEffect();
 
             if (_stats != null)
             {
@@ -57,13 +84,39 @@ namespace Swarm.Weapon
             }
         }
 
+        private void PlayBlessingEffect()
+        {
+            if (blessingEffectFrames == null || blessingEffectFrames.Length == 0) return;
+
+            if (_blessingEffectCoroutine != null)
+            {
+                StopCoroutine(_blessingEffectCoroutine);
+            }
+
+            _blessingEffectCoroutine = StartCoroutine(BlessingEffectRoutine());
+        }
+
+        private IEnumerator BlessingEffectRoutine()
+        {
+            _blessingEffectRenderer.gameObject.SetActive(true);
+            foreach (var frameSprite in blessingEffectFrames)
+            {
+                _blessingEffectRenderer.sprite = frameSprite;
+                yield return new WaitForSeconds(blessingEffectFrameDuration);
+            }
+
+            _blessingEffectRenderer.gameObject.SetActive(false);
+            _blessingEffectCoroutine = null;
+        }
+
         private void SpawnHealNumber(int amount)
         {
             if (healNumberPrefab == null) return;
 
-            var instance = Instantiate(healNumberPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            var instance = SharedObjectPool.Get(healNumberPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
             if (instance.TryGetComponent<DamageNumber>(out var damageNumber))
             {
+                damageNumber.SetSourcePrefab(healNumberPrefab);
                 damageNumber.Setup($"+{amount}", healNumberColor);
             }
         }

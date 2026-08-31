@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
 
@@ -5,15 +7,63 @@ namespace Swarm.Weapon
 {
     public class ArcherArrowWeapon : LevelableWeapon
     {
+        // Reused across calls so target selection allocates nothing per shot.
+        private readonly List<Transform> _targetBuffer = new();
+
         [SerializeField] private ProjectileWeaponData data;
+        [SerializeField] private Sprite[] hitEffectFrames;
+        [SerializeField] private float hitEffectFrameDuration = 0.045f;
+        [SerializeField] private Material effectMaterial;
 
         private float _timer;
         private ObjectPool _pool;
         private PlayerStats _stats;
+        private SpriteRenderer _hitEffectRenderer;
+        private Coroutine _hitEffectCoroutine;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
+            CreateHitEffectRenderer();
+        }
+
+        private void CreateHitEffectRenderer()
+        {
+            var effectObject = new GameObject("ArrowHitEffect (Temp)");
+            _hitEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
+            _hitEffectRenderer.sortingOrder = 2;
+            if (effectMaterial != null) _hitEffectRenderer.material = effectMaterial;
+            effectObject.SetActive(false);
+
+            if (effectMaterial != null && hitEffectFrames != null && hitEffectFrames.Length > 0)
+            {
+                StartCoroutine(WarmUpEffectShader(_hitEffectRenderer, hitEffectFrames[0]));
+            }
+        }
+
+        // Forces the additive shader variant to compile on scene load (one invisible on-screen
+        // frame) instead of during the player's first real hit, where a compile stutter would
+        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
+        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
+        {
+            renderer.sprite = sprite;
+            renderer.transform.position = transform.position;
+            var originalColor = renderer.color;
+            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+            renderer.gameObject.SetActive(true);
+
+            yield return null;
+
+            renderer.gameObject.SetActive(false);
+            renderer.color = originalColor;
+        }
+
+        private void OnDisable()
+        {
+            if (_hitEffectRenderer != null)
+            {
+                _hitEffectRenderer.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
@@ -44,7 +94,8 @@ namespace Swarm.Weapon
         {
             var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var count = Mathf.Max(1, data.ProjectileCount + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var targets = EnemyTargeting.FindMultiple(origin, data.Range, count);
+            EnemyTargeting.FindMultiple(origin, data.Range, count, _targetBuffer);
+            var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
@@ -53,16 +104,43 @@ namespace Swarm.Weapon
 
             for (var i = 0; i < targets.Count; i++)
             {
-                var direction = ((Vector2)targets[i].position - origin).normalized;
+                var direction = (EnemyTargeting.GetHitPoint(targets[i]) - origin).normalized;
 
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect);
                 }
             }
 
             return true;
+        }
+
+        private void PlayHitEffect(Vector2 position)
+        {
+            if (hitEffectFrames == null || hitEffectFrames.Length == 0) return;
+
+            _hitEffectRenderer.transform.position = position;
+
+            if (_hitEffectCoroutine != null)
+            {
+                StopCoroutine(_hitEffectCoroutine);
+            }
+
+            _hitEffectCoroutine = StartCoroutine(HitEffectRoutine());
+        }
+
+        private IEnumerator HitEffectRoutine()
+        {
+            _hitEffectRenderer.gameObject.SetActive(true);
+            foreach (var frameSprite in hitEffectFrames)
+            {
+                _hitEffectRenderer.sprite = frameSprite;
+                yield return new WaitForSeconds(hitEffectFrameDuration);
+            }
+
+            _hitEffectRenderer.gameObject.SetActive(false);
+            _hitEffectCoroutine = null;
         }
     }
 }

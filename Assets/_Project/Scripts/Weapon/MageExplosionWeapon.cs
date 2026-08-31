@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
 
@@ -5,6 +7,9 @@ namespace Swarm.Weapon
 {
     public class MageExplosionWeapon : LevelableWeapon
     {
+        // Reused across calls so target selection allocates nothing per shot.
+        private readonly List<Transform> _targetBuffer = new();
+
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float detectRange = 8f;
         [SerializeField] private float meteorFallSpeed = 9.8f;
@@ -16,15 +21,66 @@ namespace Swarm.Weapon
         [SerializeField] private int burnDamagePerTick = 4;
         [SerializeField] private Sprite meteorSprite;
         [SerializeField] private Color meteorColor = new(1f, 0.5f, 0.15f, 1f);
+        [SerializeField] private Sprite[] meteorTravelFrames;
+        [SerializeField] private float meteorTravelFrameDuration = 0.08f;
+        [SerializeField] private float meteorVisualScale = 1f;
+        [SerializeField] private Sprite[] meteorImpactEffectFrames;
+        [SerializeField] private float meteorImpactEffectFrameDuration = 0.06f;
+        [SerializeField] private float meteorImpactEffectScale = 1f;
         [SerializeField] private Sprite firePatchSprite;
         [SerializeField] private Color firePatchColor = new(1f, 0.35f, 0.1f, 0.5f);
+        [SerializeField] private Sprite[] firePatchFrames;
+        [SerializeField] private Material effectMaterial;
 
         private float _timer;
         private PlayerStats _stats;
+        private SpriteRenderer _impactEffectRenderer;
+        private Coroutine _impactEffectCoroutine;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
+            CreateImpactEffectRenderer();
+        }
+
+        private void CreateImpactEffectRenderer()
+        {
+            var effectObject = new GameObject("MeteorImpactEffect (Temp)");
+            effectObject.transform.localScale = Vector3.one * meteorImpactEffectScale;
+            _impactEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
+            _impactEffectRenderer.sortingOrder = 2;
+            if (effectMaterial != null) _impactEffectRenderer.material = effectMaterial;
+            effectObject.SetActive(false);
+
+            if (effectMaterial != null && meteorImpactEffectFrames != null && meteorImpactEffectFrames.Length > 0)
+            {
+                StartCoroutine(WarmUpEffectShader(_impactEffectRenderer, meteorImpactEffectFrames[0]));
+            }
+        }
+
+        // Forces the additive shader variant to compile on scene load (one invisible on-screen
+        // frame) instead of during the player's first real impact, where a compile stutter would
+        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
+        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
+        {
+            renderer.sprite = sprite;
+            renderer.transform.position = transform.position;
+            var originalColor = renderer.color;
+            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+            renderer.gameObject.SetActive(true);
+
+            yield return null;
+
+            renderer.gameObject.SetActive(false);
+            renderer.color = originalColor;
+        }
+
+        private void OnDisable()
+        {
+            if (_impactEffectRenderer != null)
+            {
+                _impactEffectRenderer.gameObject.SetActive(false);
+            }
         }
 
         private void Update()
@@ -49,7 +105,8 @@ namespace Swarm.Weapon
             var areaMultiplier = 1f + (_stats != null ? _stats.AreaSizeBonus : 0f);
 
             var meteorCount = Mathf.Max(1, 1 + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var targets = EnemyTargeting.FindMultiple(origin, detectRange, meteorCount);
+            EnemyTargeting.FindMultiple(origin, detectRange, meteorCount, _targetBuffer);
+            var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
@@ -62,7 +119,7 @@ namespace Swarm.Weapon
 
             foreach (var target in targets)
             {
-                SpawnMeteor(target.position, impactRadius, impactDamage, damageType, penetration, patchRadius, burnTick);
+                SpawnMeteor(EnemyTargeting.GetHitPoint(target), impactRadius, impactDamage, damageType, penetration, patchRadius, burnTick);
             }
 
             return true;
@@ -72,14 +129,57 @@ namespace Swarm.Weapon
             float penetration, float patchRadius, int burnTick)
         {
             var meteorObject = new GameObject("Meteor (Temp)");
+            meteorObject.transform.localScale = Vector3.one * meteorVisualScale;
+
             var spriteRenderer = meteorObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = meteorSprite;
-            spriteRenderer.color = meteorColor;
             spriteRenderer.sortingOrder = 2;
+            if (effectMaterial != null) spriteRenderer.material = effectMaterial;
 
             var meteor = meteorObject.AddComponent<Meteor>();
             meteor.Launch(targetPosition, meteorFallOffset, meteorFallSpeed, impactRadius, impactDamage, damageType, penetration,
-                impactPosition => SpawnFirePatch(impactPosition, patchRadius, burnTick, damageType, penetration));
+                impactPosition =>
+                {
+                    PlayImpactEffect(impactPosition);
+                    SpawnFirePatch(impactPosition, patchRadius, burnTick, damageType, penetration);
+                });
+
+            if (meteorTravelFrames != null && meteorTravelFrames.Length > 0)
+            {
+                spriteRenderer.sprite = meteorTravelFrames[0];
+                meteor.SetTravelAnimation(spriteRenderer, meteorTravelFrames, meteorTravelFrameDuration);
+            }
+            else
+            {
+                spriteRenderer.sprite = meteorSprite;
+                spriteRenderer.color = meteorColor;
+            }
+        }
+
+        private void PlayImpactEffect(Vector2 position)
+        {
+            if (meteorImpactEffectFrames == null || meteorImpactEffectFrames.Length == 0) return;
+
+            _impactEffectRenderer.transform.position = position;
+
+            if (_impactEffectCoroutine != null)
+            {
+                StopCoroutine(_impactEffectCoroutine);
+            }
+
+            _impactEffectCoroutine = StartCoroutine(ImpactEffectRoutine());
+        }
+
+        private IEnumerator ImpactEffectRoutine()
+        {
+            _impactEffectRenderer.gameObject.SetActive(true);
+            foreach (var frameSprite in meteorImpactEffectFrames)
+            {
+                _impactEffectRenderer.sprite = frameSprite;
+                yield return new WaitForSeconds(meteorImpactEffectFrameDuration);
+            }
+
+            _impactEffectRenderer.gameObject.SetActive(false);
+            _impactEffectCoroutine = null;
         }
 
         private void SpawnFirePatch(Vector2 position, float radius, int burnTick, DamageStatType damageType, float penetration)
@@ -88,12 +188,21 @@ namespace Swarm.Weapon
             patchObject.transform.position = position;
 
             var spriteRenderer = patchObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = firePatchSprite;
-            spriteRenderer.color = firePatchColor;
             spriteRenderer.sortingOrder = -1;
 
             var patch = patchObject.AddComponent<FirePatch>();
-            patch.Configure(radius, firePatchDuration, burnTick, burnTickInterval, burnDuration, damageType, penetration);
+
+            if (firePatchFrames != null && firePatchFrames.Length > 0)
+            {
+                spriteRenderer.color = new Color(1f, 1f, 1f, 0.55f);
+                patch.Configure(radius, firePatchDuration, burnTick, burnTickInterval, burnDuration, damageType, penetration, firePatchFrames);
+            }
+            else
+            {
+                spriteRenderer.sprite = firePatchSprite;
+                spriteRenderer.color = firePatchColor;
+                patch.Configure(radius, firePatchDuration, burnTick, burnTickInterval, burnDuration, damageType, penetration);
+            }
         }
     }
 }

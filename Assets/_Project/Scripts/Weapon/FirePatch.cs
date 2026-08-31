@@ -7,6 +7,15 @@ namespace Swarm.Weapon
 {
     public class FirePatch : MonoBehaviour
     {
+        // Reused across calls: the old OverlapCircleAll allocated a new array every hit tick.
+        private readonly List<Collider2D> _hitBuffer = new();
+
+        private const float IntroFrameDuration = 0.15f;
+        private const float PeakFrameDuration = 0.12f;
+        private const int IntroFrameCount = 1;
+        private const int OutroFrameCount = 1;
+        private const float VisualScaleMultiplier = 3f;
+
         private float _radius;
         private float _duration;
         private int _burnDamagePerTick;
@@ -14,12 +23,19 @@ namespace Swarm.Weapon
         private float _burnDuration;
         private DamageStatType _damageType;
         private float _penetration;
+        private Sprite[] _frames;
 
         private float _elapsed;
+        private SpriteRenderer _spriteRenderer;
         private readonly HashSet<EnemyHealth> _ignited = new();
 
+        private void Awake()
+        {
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
         public void Configure(float radius, float duration, int burnDamagePerTick, float burnTickInterval,
-            float burnDuration, DamageStatType damageType, float penetration)
+            float burnDuration, DamageStatType damageType, float penetration, Sprite[] frames = null)
         {
             _radius = radius;
             _duration = duration;
@@ -28,9 +44,17 @@ namespace Swarm.Weapon
             _burnDuration = burnDuration;
             _damageType = damageType;
             _penetration = penetration;
+            _frames = frames;
 
-            transform.localScale = new Vector3(radius * 2f, radius * 2f, 1f);
+            transform.localScale = new Vector3(radius * VisualScaleMultiplier, radius * VisualScaleMultiplier, 1f);
+
+            if (_frames != null && _frames.Length > 0 && _spriteRenderer != null)
+            {
+                _spriteRenderer.sprite = _frames[0];
+            }
         }
+
+        private bool HasFullAnimation => _frames != null && _frames.Length > IntroFrameCount + OutroFrameCount;
 
         private void Update()
         {
@@ -41,7 +65,10 @@ namespace Swarm.Weapon
                 return;
             }
 
-            var hits = Physics2D.OverlapCircleAll(transform.position, _radius);
+            UpdateAnimation();
+
+            EnemyTargeting.OverlapEnemies(transform.position, _radius, _hitBuffer);
+            var hits = _hitBuffer;
             foreach (var hit in hits)
             {
                 if (!hit.CompareTag("Enemy")) continue;
@@ -50,6 +77,34 @@ namespace Swarm.Weapon
 
                 enemyHealth.ApplyBurn(_burnDamagePerTick, _burnTickInterval, _burnDuration, _damageType, _penetration);
             }
+        }
+
+        // Intro plays once, the middle (peak) frames loop for the whole active duration to give a
+        // flickering-fire look, and the last frame plays right before the patch is destroyed -
+        // same looping-ground-effect structure as PoisonGasCloud.
+        private void UpdateAnimation()
+        {
+            if (!HasFullAnimation || _spriteRenderer == null) return;
+
+            var outroStartTime = Mathf.Max(0f, _duration - IntroFrameDuration);
+            if (_elapsed >= outroStartTime)
+            {
+                _spriteRenderer.sprite = _frames[^1];
+                return;
+            }
+
+            var introEnd = IntroFrameDuration * IntroFrameCount;
+            if (_elapsed < introEnd)
+            {
+                var introIndex = Mathf.Clamp(Mathf.FloorToInt(_elapsed / IntroFrameDuration), 0, IntroFrameCount - 1);
+                _spriteRenderer.sprite = _frames[introIndex];
+                return;
+            }
+
+            var peakFrameCount = _frames.Length - IntroFrameCount - OutroFrameCount;
+            var peakElapsed = _elapsed - introEnd;
+            var peakIndex = Mathf.FloorToInt(peakElapsed / PeakFrameDuration) % peakFrameCount;
+            _spriteRenderer.sprite = _frames[IntroFrameCount + peakIndex];
         }
     }
 }

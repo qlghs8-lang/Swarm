@@ -11,11 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8bd0e6dc86641ddb9cf7ced448c7357, type: 3}
   m_Name: MageFireballWeaponData
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   damage: 30
   attackInterval: 3
   projectileSpeed: 6
-  projectilePrefab: {fileID: 7000000000000000001, guid: 8b62b26a23914687b36b9fc3d183e030, type: 3}
+  projectilePrefab: {fileID: 7995594773830494351, guid: cfb5f632e4344704d8a6b31c50333c6d, type: 3}
   range: 8
   projectileCount: 1
   spreadAngleDegrees: 0

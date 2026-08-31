@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
 
@@ -5,23 +7,65 @@ namespace Swarm.Weapon
 {
     public class WarriorForwardWeapon : LevelableWeapon
     {
+        // Reused across calls: the old OverlapCircleAll allocated a new array every hit tick.
+        private readonly List<Collider2D> _hitBuffer = new();
+
         private const float IndicatorDuration = 0.15f;
         private const int FanSegments = 16;
+        private const float SlashOriginOffset = 0.32f;
+        private const float SlashEffectReferenceRadius = 0.6f;
 
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float forwardAngleDegrees = 150f;
         [SerializeField] private Color indicatorColor = new(1f, 0.3f, 0.3f, 0.6f);
+        [SerializeField] private Sprite[] slashEffectFrames;
+        [SerializeField] private float slashFrameDuration = 0.05f;
+        [SerializeField] private Material effectMaterial;
 
         private float _timer;
         private float _indicatorTimer;
         private PlayerStats _stats;
         private Transform _indicator;
         private Mesh _indicatorMesh;
+        private SpriteRenderer _slashEffectRenderer;
+        private Coroutine _slashEffectCoroutine;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
             CreateIndicator();
+            CreateSlashEffectRenderer();
+        }
+
+        private void CreateSlashEffectRenderer()
+        {
+            var effectObject = new GameObject("SlashEffect (Temp)");
+            _slashEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
+            _slashEffectRenderer.sortingOrder = 2;
+            if (effectMaterial != null) _slashEffectRenderer.material = effectMaterial;
+            effectObject.SetActive(false);
+
+            if (effectMaterial != null && slashEffectFrames != null && slashEffectFrames.Length > 0)
+            {
+                StartCoroutine(WarmUpEffectShader(_slashEffectRenderer, slashEffectFrames[0]));
+            }
+        }
+
+        // Forces the additive shader variant to compile on scene load (one invisible on-screen
+        // frame) instead of during the player's first real attack, where a compile stutter would
+        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
+        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
+        {
+            renderer.sprite = sprite;
+            renderer.transform.position = transform.position;
+            var originalColor = renderer.color;
+            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+            renderer.gameObject.SetActive(true);
+
+            yield return null;
+
+            renderer.gameObject.SetActive(false);
+            renderer.color = originalColor;
         }
 
         private void CreateIndicator()
@@ -43,6 +87,11 @@ namespace Swarm.Weapon
             if (_indicator != null)
             {
                 _indicator.gameObject.SetActive(false);
+            }
+
+            if (_slashEffectRenderer != null)
+            {
+                _slashEffectRenderer.gameObject.SetActive(false);
             }
         }
 
@@ -78,12 +127,13 @@ namespace Swarm.Weapon
             var target = EnemyTargeting.FindNearest(origin, radius);
             if (target == null) return false;
 
-            var facing = ((Vector2)target.position - origin).normalized;
+            var facing = (EnemyTargeting.GetHitPoint(target) - origin).normalized;
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
             var forwardDotThreshold = Mathf.Cos(forwardAngleDegrees * 0.5f * Mathf.Deg2Rad);
 
-            var hits = Physics2D.OverlapCircleAll(origin, radius);
+            EnemyTargeting.OverlapEnemies(origin, radius, _hitBuffer);
+            var hits = _hitBuffer;
             foreach (var hit in hits)
             {
                 if (!hit.CompareTag("Enemy")) continue;
@@ -94,11 +144,44 @@ namespace Swarm.Weapon
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
                     damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration);
+                    PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }
 
-            ShowIndicator(origin, facing, radius);
+            PlaySlashEffect(origin, facing, radius);
             return true;
+        }
+
+        private void PlaySlashEffect(Vector2 origin, Vector2 facing, float radius)
+        {
+            if (slashEffectFrames == null || slashEffectFrames.Length == 0) return;
+
+            var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg;
+            var scale = radius / SlashEffectReferenceRadius;
+            var transformComponent = _slashEffectRenderer.transform;
+            transformComponent.position = origin + facing * (SlashOriginOffset * scale);
+            transformComponent.rotation = Quaternion.Euler(0f, 0f, angle);
+            transformComponent.localScale = Vector3.one * scale;
+
+            if (_slashEffectCoroutine != null)
+            {
+                StopCoroutine(_slashEffectCoroutine);
+            }
+
+            _slashEffectCoroutine = StartCoroutine(SlashEffectRoutine());
+        }
+
+        private IEnumerator SlashEffectRoutine()
+        {
+            _slashEffectRenderer.gameObject.SetActive(true);
+            foreach (var frameSprite in slashEffectFrames)
+            {
+                _slashEffectRenderer.sprite = frameSprite;
+                yield return new WaitForSeconds(slashFrameDuration);
+            }
+
+            _slashEffectRenderer.gameObject.SetActive(false);
+            _slashEffectCoroutine = null;
         }
 
         private void ShowIndicator(Vector2 origin, Vector2 facing, float radius)

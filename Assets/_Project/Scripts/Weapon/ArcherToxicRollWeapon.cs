@@ -11,8 +11,8 @@ namespace Swarm.Weapon
         [SerializeField] private float rollDuration = 0.2f;
         [SerializeField] private float baseCooldown = 4f;
 
-        [SerializeField] private Sprite gasCloudSprite;
-        [SerializeField] private Color gasCloudColor = new(0.4f, 0.9f, 0.3f, 0.5f);
+        [SerializeField] private Sprite[] gasCloudFrames;
+        [SerializeField] private Color gasCloudColor = new(1f, 1f, 1f, 0.55f);
         [SerializeField] private float gasCloudRadius = 1.5f;
         [SerializeField] private float gasCloudDuration = 3f;
         [SerializeField] private float tickInterval = 0.5f;
@@ -115,13 +115,12 @@ namespace Swarm.Weapon
             cloudObject.transform.position = position;
 
             var spriteRenderer = cloudObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = gasCloudSprite;
             spriteRenderer.color = gasCloudColor;
-            spriteRenderer.sortingOrder = -1;
+            spriteRenderer.sortingOrder = 1; // above the enemy sprite (sortingOrder 0) so the monster reads as standing "inside" the semi-transparent gas
 
             var cloud = cloudObject.AddComponent<PoisonGasCloud>();
             cloud.Configure(radius, gasCloudDuration, tickInterval, damage,
-                defensePenalty + levelBonus, Mathf.Max(0.1f, speedMultiplier - levelBonus), penetration);
+                defensePenalty + levelBonus, Mathf.Max(0.1f, speedMultiplier - levelBonus), penetration, gasCloudFrames);
         }
     }
 }

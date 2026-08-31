@@ -11,12 +11,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1f357cffddf4518b6fe364b10e4d625, type: 3}
   m_Name: Warrior
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: warrior
-  displayName: 전사
+  displayName: "\uC804\uC0AC"
   unlockCost: 0
   damageStatType: 0
   maxHealthBonus: 40
   defenseBonus: 0.15
   moveSpeedBonus: 0
   cooldownReductionBonus: 0
+  defaultSprite: {fileID: 941300381892296122, guid: c2710e718792e6743aa19f72cfb6b4ff, type: 3}
+  animatorController: {fileID: 9100000, guid: 842f292b1dd76c24185de34b9d4dcf1c, type: 2}

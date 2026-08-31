@@ -17,6 +17,23 @@ namespace Swarm.Game
 
         private const float SlotHeight = 100f;
 
+        private void OnEnable()
+        {
+            // The shop panel spends gold through its own UI, so this screen's total would sit at
+            // the pre-purchase value until the scene reloaded.
+            GoldWallet.OnChanged += UpdateGoldText;
+        }
+
+        private void OnDisable()
+        {
+            GoldWallet.OnChanged -= UpdateGoldText;
+        }
+
+        private void UpdateGoldText()
+        {
+            if (goldText != null) goldText.text = $"보유 골드: {GoldWallet.Current}";
+        }
+
         private void Start()
         {
             if (string.IsNullOrEmpty(PlayerPrefs.GetString(SelectedCharacterKey, "")) && characters.Length > 0)
@@ -41,6 +58,7 @@ namespace Swarm.Game
         public void ResetProgress()
         {
             PlayerPrefs.DeleteAll();
+            GoldWallet.Invalidate();
 
             if (characters.Length > 0)
             {
@@ -53,7 +71,7 @@ namespace Swarm.Game
 
         private void RefreshUI()
         {
-            goldText.text = $"보유 골드: {GoldWallet.Current}";
+            UpdateGoldText();
 
             for (int i = slotContainer.childCount - 1; i >= 0; i--)
             {

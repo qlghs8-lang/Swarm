@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3, y: 1.2, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -59,7 +59,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  m_Color: {r: 0.75, g: 0.88, b: 1, a: 0.95}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -102,6 +102,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3535ca5d346bdc04787d569f47375e2d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   duration: 0.15
+  frames:
+  - {fileID: -4892682485385808357, guid: 606869f1d5597de4fb1ee260e4f3f0ab, type: 3}
+  - {fileID: -1641856314396497277, guid: 606869f1d5597de4fb1ee260e4f3f0ab, type: 3}
+  - {fileID: -5258362496224370976, guid: 606869f1d5597de4fb1ee260e4f3f0ab, type: 3}
+  - {fileID: -5809203992213843582, guid: 606869f1d5597de4fb1ee260e4f3f0ab, type: 3}
+  - {fileID: -8392068815566111599, guid: 606869f1d5597de4fb1ee260e4f3f0ab, type: 3}
+  frameDuration: 0.05

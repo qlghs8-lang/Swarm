@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 6330343059316461652}
   - component: {fileID: 5123456789012345678}
   - component: {fileID: 7123456789012345678}
-  m_Layer: 0
+  - component: {fileID: 8655743744318172773}
+  m_Layer: 7
   m_Name: Enemy_Basic
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -86,8 +87,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  m_Color: {r: 0.9, g: 0.25, b: 0.25, a: 1}
+  m_Sprite: {fileID: 3001069441265673941, guid: adad1b6a0a2ff2a4aa56042d7c53dfe1, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -119,7 +120,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
@@ -157,7 +158,7 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.75}
   m_Radius: 0.5
 --- !u!114 &6330343059316461652
 MonoBehaviour:
@@ -169,7 +170,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f98096d00def07479cc9a67cc1ea8a1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyChaser
   moveSpeed: 2
 --- !u!114 &5123456789012345678
@@ -182,7 +183,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 53e47aa94b90ce845a47f34bd6812ad0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyContactDamage
   damage: 10
 --- !u!114 &7123456789012345678
@@ -195,11 +196,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4ecf3950ce5e460a9093ca91b25abc2a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyHealth
   maxHealth: 30
   experiencePickupPrefab: {fileID: 4000000000000000001, guid: 37852e5ce3b9499498fed1e30736c6b9, type: 3}
   experienceReward: 5
   goldPickupPrefab: {fileID: 5000000000000000001, guid: d25c0962ce974e8cb4c8a294a85188a4, type: 3}
   goldDropChance: 0.1
+  dropScatterRadius: 0.5
   damageNumberPrefab: {fileID: 6000000000000000001, guid: 939040dee52047db8e60f4f991352ab5, type: 3}
+--- !u!95 &8655743744318172773
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3475592257221574289}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 7f6b7491e4c75224d9956ae37a4bfa06, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

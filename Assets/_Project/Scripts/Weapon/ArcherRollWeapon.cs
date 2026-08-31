@@ -20,6 +20,7 @@ namespace Swarm.Weapon
         private PlayerController _controller;
         private PlayerHealth _health;
         private Rigidbody2D _rigidbody;
+        private Animator _animator;
 
         public float CooldownProgress01 { get; private set; } = 1f;
 
@@ -29,6 +30,7 @@ namespace Swarm.Weapon
             _controller = GetComponent<PlayerController>();
             _health = GetComponent<PlayerHealth>();
             _rigidbody = GetComponent<Rigidbody2D>();
+            _animator = GetComponent<Animator>();
         }
 
         private void Update()
@@ -89,6 +91,7 @@ namespace Swarm.Weapon
 
             if (_controller != null) _controller.enabled = false;
             if (_health != null) _health.SetInvincible(rollDuration);
+            if (_animator != null) _animator.SetTrigger("Roll");
         }
     }
 }

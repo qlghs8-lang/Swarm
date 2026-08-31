@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
 
@@ -6,6 +7,40 @@ namespace Swarm.Enemy
 {
     public class BossSlamAttack : MonoBehaviour
     {
+        // The slam only ever needs the player, so the query is filtered to the Player
+        // layer instead of collecting every collider in the blast radius.
+        private static ContactFilter2D _playerFilter;
+        private static bool _playerFilterReady;
+
+        private static ContactFilter2D PlayerFilter
+        {
+            get
+            {
+                if (!_playerFilterReady)
+                {
+                    var mask = LayerMask.GetMask("Player");
+                    if (mask == 0)
+                    {
+                        Debug.LogError("Layer 'Player' is not defined in Tags & Layers. " +
+                                       "Boss slam falls back to all layers until it is added.");
+                        mask = Physics2D.AllLayers;
+                    }
+
+                    _playerFilter = new ContactFilter2D
+                    {
+                        useLayerMask = true,
+                        layerMask = mask,
+                        useTriggers = true,
+                    };
+                    _playerFilterReady = true;
+                }
+
+                return _playerFilter;
+            }
+        }
+
+        private readonly List<Collider2D> _hitBuffer = new();
+
         private const int CircleSegments = 24;
 
         [SerializeField] private float interval = 4f;
@@ -72,9 +107,10 @@ namespace Swarm.Enemy
 
         private void ApplyDamage()
         {
-            var hits = Physics2D.OverlapCircleAll(transform.position, radius);
-            foreach (var hit in hits)
+            var count = Physics2D.OverlapCircle(transform.position, radius, PlayerFilter, _hitBuffer);
+            for (var i = 0; i < count; i++)
             {
+                var hit = _hitBuffer[i];
                 if (!hit.CompareTag("Player")) continue;
 
                 if (hit.TryGetComponent<PlayerHealth>(out var health))

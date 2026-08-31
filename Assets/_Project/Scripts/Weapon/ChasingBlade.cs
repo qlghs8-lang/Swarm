@@ -6,7 +6,14 @@ namespace Swarm.Weapon
 {
     public class ChasingBlade : MonoBehaviour
     {
+        // Reused across calls: the old OverlapCircleAll allocated a new array every hit tick.
+        private readonly List<Collider2D> _hitBuffer = new();
+
+        // Reused across calls so target selection allocates nothing per shot.
+        private readonly List<Transform> _targetBuffer = new();
+
         private const int MaxCandidates = 8;
+        private const float ReturnAngularCatchUpDegreesPerSecond = 720f;
 
         private enum State
         {
@@ -34,6 +41,34 @@ namespace Swarm.Weapon
         private float _attackTimer;
 
         private readonly Dictionary<Collider2D, float> _lastHitTime = new();
+
+        // The hit-cooldown table is keyed by Collider2D and enemies are recycled through an
+        // object pool, so without pruning it grew for the entire run: thousands of entries
+        // pinning destroyed objects and slowing every lookup. An entry older than the cooldown
+        // can never suppress a hit again, so dropping it is behaviour-neutral.
+        private const float HitHistoryPruneInterval = 2f;
+        private float _nextHitHistoryPrune;
+        private readonly List<Collider2D> _staleHitKeys = new();
+
+        private void PruneHitHistory()
+        {
+            if (Time.time < _nextHitHistoryPrune) return;
+            _nextHitHistoryPrune = Time.time + HitHistoryPruneInterval;
+
+            _staleHitKeys.Clear();
+            foreach (var pair in _lastHitTime)
+            {
+                if (pair.Key == null || Time.time - pair.Value >= _hitCooldown)
+                {
+                    _staleHitKeys.Add(pair.Key);
+                }
+            }
+
+            for (var i = 0; i < _staleHitKeys.Count; i++)
+            {
+                _lastHitTime.Remove(_staleHitKeys[i]);
+            }
+        }
 
         public Transform CurrentTarget => _state == State.Chasing ? _chaseTarget : null;
 
@@ -75,6 +110,7 @@ namespace Swarm.Weapon
             if (_state == State.Chasing && IsOffScreen(transform.position))
             {
                 transform.position = OrbitPosition;
+                transform.rotation = Quaternion.identity;
                 _state = State.Orbiting;
             }
 
@@ -104,6 +140,7 @@ namespace Swarm.Weapon
         private void UpdateOrbiting()
         {
             transform.position = OrbitPosition;
+            transform.rotation = Quaternion.identity;
             DealProximityDamage();
 
             var target = FindTarget(null);
@@ -142,6 +179,7 @@ namespace Swarm.Weapon
                 if (_chaseTarget.TryGetComponent<IDamageable>(out var damageable))
                 {
                     damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration);
+                    PlayerDamageEvents.RaiseDamageDealt(_chaseTarget.gameObject);
                 }
 
                 _attackTimer = _hitCooldown;
@@ -162,21 +200,36 @@ namespace Swarm.Weapon
                 return;
             }
 
-            transform.position += (Vector3)(toPoint.normalized * (_chaseSpeed * Time.deltaTime));
+            var moveDirection = toPoint.normalized;
+            transform.position += (Vector3)(moveDirection * (_chaseSpeed * Time.deltaTime));
+
+            // Blade artwork points up (+Y) by default, so its rotation needs a -90° correction to face the travel direction.
+            var angle = Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
         private void UpdateReturning()
         {
-            var target = OrbitPosition;
-            var toTarget = target - (Vector2)transform.position;
+            transform.rotation = Quaternion.identity;
 
-            if (toTarget.magnitude <= 0.1f)
+            // Chasing OrbitPosition directly with a fixed linear speed fails once the ring's own
+            // tangential speed (angular speed * orbitRadius, inflated by range-increase passives)
+            // exceeds _chaseSpeed - the blade can never catch up and drifts outside the ring.
+            // Closing radius and angle as two independent 1D interpolations always converges instead.
+            var toPivot = (Vector2)transform.position - (Vector2)_pivot.position;
+            var currentRadius = toPivot.magnitude;
+            var currentAngle = Mathf.Atan2(toPivot.y, toPivot.x) * Mathf.Rad2Deg;
+
+            var newRadius = Mathf.MoveTowards(currentRadius, _orbitRadius, _chaseSpeed * Time.deltaTime);
+            var newAngle = Mathf.MoveTowardsAngle(currentAngle, _orbitAngleDegrees, ReturnAngularCatchUpDegreesPerSecond * Time.deltaTime);
+            var radians = newAngle * Mathf.Deg2Rad;
+            transform.position = (Vector2)_pivot.position + newRadius * new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
+
+            if (Mathf.Abs(newRadius - _orbitRadius) <= 0.05f && Mathf.Abs(Mathf.DeltaAngle(newAngle, _orbitAngleDegrees)) <= 1f)
             {
                 _state = State.Orbiting;
                 return;
             }
-
-            transform.position += (Vector3)(toTarget.normalized * (_chaseSpeed * Time.deltaTime));
 
             var newTarget = FindTarget(null);
             if (newTarget != null)
@@ -189,7 +242,8 @@ namespace Swarm.Weapon
 
         private Transform FindTarget(Transform previous)
         {
-            var candidates = EnemyTargeting.FindMultiple(transform.position, _chaseRange, MaxCandidates);
+            EnemyTargeting.FindMultiple(transform.position, _chaseRange, MaxCandidates, _targetBuffer);
+            var candidates = _targetBuffer;
 
             foreach (var candidate in candidates)
             {
@@ -221,7 +275,10 @@ namespace Swarm.Weapon
 
         private void DealProximityDamage()
         {
-            var hits = Physics2D.OverlapCircleAll(transform.position, _hitRadius);
+            PruneHitHistory();
+
+            EnemyTargeting.OverlapEnemies(transform.position, _hitRadius, _hitBuffer);
+            var hits = _hitBuffer;
             foreach (var hit in hits)
             {
                 if (!hit.CompareTag("Enemy")) continue;
@@ -232,6 +289,7 @@ namespace Swarm.Weapon
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
                     damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration);
+                    PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                     _lastHitTime[hit] = Time.time;
                 }
             }

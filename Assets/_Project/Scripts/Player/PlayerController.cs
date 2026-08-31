@@ -67,10 +67,14 @@ namespace Swarm.Player
             }
         }
 
+        // Velocity-driven for the same reason as EnemyChaser: MovePosition pinned the player onto an
+        // exact path every step, so the crowd read as an immovable wall instead of something you can
+        // shove a way through. With velocity the player's contacts push enemies aside, and the
+        // player's Rigidbody2D mass controls how hard.
         private void FixedUpdate()
         {
             var effectiveSpeed = moveSpeed * (1f + (_stats != null ? _stats.MoveSpeedBonus : 0f));
-            _rigidbody.MovePosition(_rigidbody.position + _moveInput.normalized * (effectiveSpeed * Time.fixedDeltaTime));
+            _rigidbody.linearVelocity = _moveInput.normalized * effectiveSpeed;
         }
     }
 }

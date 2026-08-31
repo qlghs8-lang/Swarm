@@ -279,7 +279,7 @@ GameObject:
   - component: {fileID: 227348281}
   - component: {fileID: 227348282}
   - component: {fileID: 227348283}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -348,7 +348,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 8
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 0
@@ -359,7 +359,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
@@ -412,7 +412,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 941300381892296122, guid: c2710e718792e6743aa19f72cfb6b4ff, type: 3}
+  m_Sprite: {fileID: -2110994483691734950, guid: bff55abab6e3e4c4baa1851fdc49521f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -472,6 +472,14 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 0897ca204af34bee9b82c49266bd5055, type: 2}
   forwardAngleDegrees: 150
   indicatorColor: {r: 1, g: 0.3, b: 0.3, a: 0.6}
+  slashEffectFrames:
+  - {fileID: 1935912649375154732, guid: d029b82cc6fa38344bd666abfe386524, type: 3}
+  - {fileID: -1120883998921271691, guid: d029b82cc6fa38344bd666abfe386524, type: 3}
+  - {fileID: 7962130095777296809, guid: d029b82cc6fa38344bd666abfe386524, type: 3}
+  - {fileID: -271147680245117773, guid: d029b82cc6fa38344bd666abfe386524, type: 3}
+  - {fileID: 9024908301883949219, guid: d029b82cc6fa38344bd666abfe386524, type: 3}
+  slashFrameDuration: 0.05
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,8 +500,8 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348275}
   data: {fileID: 11400000, guid: 98a3e745327f4625a01b7327e6dec81c, type: 2}
-  bladeSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  bladeColor: {r: 0.3, g: 0.6, b: 1, a: 0.9}
+  bladeSprite: {fileID: -4258473166252722804, guid: 3b4a293d9188dd747b1afa77e782352e, type: 3}
+  bladeColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &227348265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -506,16 +514,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c86a40d971f745ba8362bb7f47547bb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Weapon.WarriorLifestealWeapon
-  displayName: "\uD761\uD608 \uAC15\uD0C0"
-  description: "\uAC00\uAE4C\uC6B4 \uC801 \uD558\uB098\uC5D0\uAC8C \uAC15\uB825\uD55C
-    \uC77C\uACA9\uC744 \uAC00\uD558\uACE0 \uC785\uD78C \uB370\uBBF8\uC9C0 \uC77C\uBD80\uB97C
-    \uCCB4\uB825\uC73C\uB85C \uD68C\uBCF5\uD569\uB2C8\uB2E4"
+  displayName: "\uD761\uD608"
+  description: "\uC801\uC5D0\uAC8C \uD53C\uD574\uB97C \uC904 \uB54C\uB9C8\uB2E4 10%
+    \uD655\uB960\uB85C \uCD94\uAC00 \uD53C\uD574 + \uCCB4\uB825 \uD68C\uBCF5"
   maxLevel: 8
   damagePerLevel: 0.15
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348276}
   data: {fileID: 11400000, guid: 0a534c8f813c471c9c64652f88269f46, type: 2}
-  lifestealPercent: 0.1
+  procChance: 0.1
+  healAmount: 15
+  smashEffectFrames:
+  - {fileID: -8403997643517564896, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 1853652768090699587, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 4683884737671837845, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 2992320263890200679, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 1120207256025601780, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  smashFrameDuration: 0.06
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -561,6 +577,11 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348277}
   data: {fileID: 11400000, guid: 49ca08e707b24705a0006f9e88b10ae7, type: 2}
+  hitEffectFrames:
+  - {fileID: -7881516260450174282, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  - {fileID: -7359713876043662810, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  hitEffectFrameDuration: 0.045
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -580,6 +601,11 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348278}
   data: {fileID: 11400000, guid: 25bc8c7deff54bf6860a4929e6758f1e, type: 2}
+  hitEffectFrames:
+  - {fileID: -7881516260450174282, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  - {fileID: -7359713876043662810, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  hitEffectFrameDuration: 0.045
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348270
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -592,9 +618,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7bf84ee7bfd41aeb30949a2ae9bc2bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Weapon.ArcherRollWeapon
-  displayName: "\uAD6C\uB974\uAE30"
+  displayName: "\uB300\uC2DC"
   description: "\uC9E7\uC740 \uC2DC\uAC04 \uBB34\uC801 \uC0C1\uD0DC\uB85C \uD68C\uD53C
-    \uAD6C\uB974\uAE30\uB97C \uD569\uB2C8\uB2E4"
+    \uB300\uC2DC\uB97C \uD569\uB2C8\uB2E4"
   maxLevel: 8
   damagePerLevel: 0.15
   cooldownReductionPerLevel: 0.08
@@ -645,6 +671,11 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348281}
   data: {fileID: 11400000, guid: 5a1a2223b4387064ca65d92ddfa6c045, type: 2}
+  hitEffectFrames:
+  - {fileID: -2052017142546343998, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
+  hitEffectFrameDuration: 0.05
+  hitEffectScale: 3.5
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -667,6 +698,14 @@ MonoBehaviour:
   baseCooldown: 30
   healNumberPrefab: {fileID: 6000000000000000001, guid: 939040dee52047db8e60f4f991352ab5, type: 3}
   healNumberColor: {r: 0.3, g: 1, b: 0.4, a: 1}
+  healEffectFrames:
+  - {fileID: -8258445922015139311, guid: bd1b767f5e370244096245b5e26a1220, type: 3}
+  - {fileID: 5113824245137700775, guid: bd1b767f5e370244096245b5e26a1220, type: 3}
+  - {fileID: -5675234856527890711, guid: bd1b767f5e370244096245b5e26a1220, type: 3}
+  - {fileID: 5437675857847335712, guid: bd1b767f5e370244096245b5e26a1220, type: 3}
+  - {fileID: -675785725428346992, guid: bd1b767f5e370244096245b5e26a1220, type: 3}
+  healEffectFrameDuration: 0.16
+  healEffectScale: 2
 --- !u!114 &227348274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -690,8 +729,28 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 190455e5b7de42a69ef56413b0a65f11, type: 2}
   - {fileID: 11400000, guid: 16f867bd437b48dd869da166f7964088, type: 2}
   - {fileID: 11400000, guid: 6b5d91b381994754a0c81508b393a97f, type: 2}
-  forwardAngleDegrees: 150
   indicatorColor: {r: 1, g: 0.3, b: 0.3, a: 0.6}
+  stepEffects:
+  - frames:
+    - {fileID: 7068092388371886015, guid: 26d0add90977ba446ba098dc9b9d310d, type: 3}
+    - {fileID: -7429631996304100919, guid: 26d0add90977ba446ba098dc9b9d310d, type: 3}
+    - {fileID: 8239968160321083757, guid: 26d0add90977ba446ba098dc9b9d310d, type: 3}
+    - {fileID: 7925858886256765448, guid: 26d0add90977ba446ba098dc9b9d310d, type: 3}
+    - {fileID: 53782807013359703, guid: 26d0add90977ba446ba098dc9b9d310d, type: 3}
+  - frames:
+    - {fileID: 5459701638079334802, guid: 3a3e85bdc57bae14e914313dcb412a39, type: 3}
+    - {fileID: 2703792295549043599, guid: 3a3e85bdc57bae14e914313dcb412a39, type: 3}
+    - {fileID: 4969564466334197728, guid: 3a3e85bdc57bae14e914313dcb412a39, type: 3}
+    - {fileID: -2596140610222919588, guid: 3a3e85bdc57bae14e914313dcb412a39, type: 3}
+    - {fileID: 7303929671656091080, guid: 3a3e85bdc57bae14e914313dcb412a39, type: 3}
+  - frames:
+    - {fileID: -6805107682228619749, guid: 8bfe434a93ed9724ea907faa16d31f72, type: 3}
+    - {fileID: 7445568254622355035, guid: 8bfe434a93ed9724ea907faa16d31f72, type: 3}
+    - {fileID: 8345663241778092382, guid: 8bfe434a93ed9724ea907faa16d31f72, type: 3}
+    - {fileID: 4348634867397807073, guid: 8bfe434a93ed9724ea907faa16d31f72, type: 3}
+    - {fileID: -2796118647483717054, guid: 8bfe434a93ed9724ea907faa16d31f72, type: 3}
+  effectFrameDuration: 0.05
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -716,8 +775,8 @@ MonoBehaviour:
   chaseRange: 4
   chaseSpeed: 10
   swoopDistance: 1.5
-  bladeSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  bladeColor: {r: 1, g: 0.4, b: 0.2, a: 0.9}
+  bladeSprite: {fileID: -758136772573345123, guid: d4ca22e607a8d574d93d5633aebb2233, type: 3}
+  bladeColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &227348276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -731,18 +790,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Weapon.WarriorRageWeapon
   displayName: "\uB808\uC774\uC9C0"
-  description: "\uAC00\uAE4C\uC6B4 \uC801 \uD558\uB098\uC5D0\uAC8C \uAC15\uB825\uD55C
-    \uC77C\uACA9\uC744 \uAC00\uD558\uACE0 \uD761\uD608\uD569\uB2C8\uB2E4. \uCC98\uCE58
-    \uC2DC \uACF5\uACA9\uB825\uACFC \uCD5C\uB300 \uCCB4\uB825\uC774 \uC601\uAD6C\uD788
-    \uC99D\uAC00\uD569\uB2C8\uB2E4"
+  description: "\uD761\uD608 \uBC1C\uB3D9 \uC2DC 10% \uD655\uB960\uB85C \uACF5\uACA9\uB825/\uCD5C\uB300
+    \uCCB4\uB825 \uC601\uAD6C \uC99D\uAC00"
   maxLevel: 8
   damagePerLevel: 0.15
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: 6256583940464afc9b307c6e3d14f099, type: 2}
-  lifestealPercent: 0.1
-  attackPowerPerKill: 0.1
-  maxHealthPerKill: 2
+  procChance: 0.1
+  healAmount: 15
+  stackChance: 0.1
+  attackPowerPerStack: 0.1
+  maxHealthPerStack: 2
+  smashEffectFrames:
+  - {fileID: -8403997643517564896, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 1853652768090699587, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 4683884737671837845, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 2992320263890200679, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  - {fileID: 1120207256025601780, guid: 60115d797ec1be84d9c4e0e33b2bf50c, type: 3}
+  smashFrameDuration: 0.07
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -765,6 +832,11 @@ MonoBehaviour:
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: dbc58be10ddd45f697ee3d68ed8d8f5f, type: 2}
   burstInterval: 0.06
+  hitEffectFrames:
+  - {fileID: -7881516260450174282, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  - {fileID: -7359713876043662810, guid: df533ff8984b8a94d99f37ada18a18b1, type: 3}
+  hitEffectFrameDuration: 0.045
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -798,8 +870,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25281a7cc0134b6ea947eed3b0032f32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Weapon.ArcherToxicRollWeapon
-  displayName: "\uB9F9\uB3C5 \uAD6C\uB974\uAE30"
-  description: "\uAD6C\uB978 \uC790\uB9AC\uC5D0 \uB3C5\uAC00\uC2A4 \uC7A5\uD310\uC744
+  displayName: "\uB9F9\uB3C5 \uB300\uC2DC"
+  description: "\uB300\uC2DC\uD55C \uC790\uB9AC\uC5D0 \uB3C5\uAC00\uC2A4 \uC7A5\uD310\uC744
     \uB0A8\uACA8 \uB3C4\uD2B8\uB51C\uACFC \uBC29\uC5B4\uB825\xB7\uC774\uB3D9\uC18D\uB3C4
     \uAC10\uC18C \uB514\uBC84\uD504\uB97C \uC90D\uB2C8\uB2E4"
   maxLevel: 8
@@ -809,7 +881,12 @@ MonoBehaviour:
   rollDistance: 3
   rollDuration: 0.2
   baseCooldown: 4
-  gasCloudSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
+  gasCloudFrames:
+  - {fileID: 5600902816546969465, guid: eb845ebb3ca80e9448b405e299416c0e, type: 3}
+  - {fileID: 442416102243724965, guid: eb845ebb3ca80e9448b405e299416c0e, type: 3}
+  - {fileID: 1036270393352029831, guid: eb845ebb3ca80e9448b405e299416c0e, type: 3}
+  - {fileID: -6257758365933973682, guid: eb845ebb3ca80e9448b405e299416c0e, type: 3}
+  - {fileID: -4713516335772936510, guid: eb845ebb3ca80e9448b405e299416c0e, type: 3}
   gasCloudColor: {r: 0.4, g: 0.9, b: 0.3, a: 0.5}
   gasCloudRadius: 1.5
   gasCloudDuration: 3
@@ -846,6 +923,16 @@ MonoBehaviour:
   freezeDuration: 1
   boltSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
   boltColor: {r: 0.5, g: 0.85, b: 1, a: 0.95}
+  travelFrames:
+  - {fileID: 3348703604728630549, guid: 2ec47c2d898911345afaf3f33fa54a50, type: 3}
+  - {fileID: 17621064975273701, guid: 2ec47c2d898911345afaf3f33fa54a50, type: 3}
+  - {fileID: 4730889786584445863, guid: 2ec47c2d898911345afaf3f33fa54a50, type: 3}
+  travelFrameDuration: 0.08
+  visualScale: 2.5
+  hitEffectFrames:
+  - {fileID: -963689926653784692, guid: 2ec47c2d898911345afaf3f33fa54a50, type: 3}
+  hitEffectFrameDuration: 0.05
+  hitEffectScale: 3.5
 --- !u!114 &227348281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -877,8 +964,28 @@ MonoBehaviour:
   burnDamagePerTick: 4
   meteorSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
   meteorColor: {r: 1, g: 0.5, b: 0.15, a: 1}
+  meteorTravelFrames:
+  - {fileID: 2219006407058193793, guid: 8ac1379e4a3e36f4bb147d3a95847750, type: 3}
+  - {fileID: -8550495869183852122, guid: 8ac1379e4a3e36f4bb147d3a95847750, type: 3}
+  - {fileID: -2201275829931142263, guid: 8ac1379e4a3e36f4bb147d3a95847750, type: 3}
+  meteorTravelFrameDuration: 0.08
+  meteorVisualScale: 2.5
+  meteorImpactEffectFrames:
+  - {fileID: -6836561147351024659, guid: 8ac1379e4a3e36f4bb147d3a95847750, type: 3}
+  - {fileID: 872305336597475408, guid: 8ac1379e4a3e36f4bb147d3a95847750, type: 3}
+  meteorImpactEffectFrameDuration: 0.06
+  meteorImpactEffectScale: 2.5
   firePatchSprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
   firePatchColor: {r: 1, g: 0.35, b: 0.1, a: 0.5}
+  firePatchFrames:
+  - {fileID: 4299835154327229659, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: -7241709832655146713, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: -2964486853726919522, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: 5714846862789431647, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: -7932567586288055871, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: 5654719906448902872, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  - {fileID: 6436689604926211990, guid: fc71a5fd314fd4044b1c4f2e810a01cf, type: 3}
+  effectMaterial: {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
 --- !u!114 &227348282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -910,6 +1017,14 @@ MonoBehaviour:
   magicPenetrationBonusPerLevel: 0.05
   cooldownReductionBonus: 0.25
   buffDuration: 3
+  blessingEffectFrames:
+  - {fileID: 3489450986058665347, guid: 77bb28a8e6d439444927d5f5a8ac2434, type: 3}
+  - {fileID: -8276310180137944776, guid: 77bb28a8e6d439444927d5f5a8ac2434, type: 3}
+  - {fileID: 6570428632437831049, guid: 77bb28a8e6d439444927d5f5a8ac2434, type: 3}
+  - {fileID: 5589207315065367976, guid: 77bb28a8e6d439444927d5f5a8ac2434, type: 3}
+  - {fileID: 1998601601165673807, guid: 77bb28a8e6d439444927d5f5a8ac2434, type: 3}
+  blessingEffectFrameDuration: 0.16
+  blessingEffectScale: 2
 --- !u!95 &227348283
 Animator:
   serializedVersion: 7
@@ -920,7 +1035,7 @@ Animator:
   m_GameObject: {fileID: 227348256}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 842f292b1dd76c24185de34b9d4dcf1c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 7bb772e981406ea44b035d6cfd29cfa5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -1183,15 +1298,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.15, g: 0.15, b: 0.15, a: 0.85}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: e91165fb08f34f27b9b74e7224718abc, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1246,10 +1361,10 @@ RectTransform:
   m_Father: {fileID: 600000006}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 200, y: 0}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &600000012
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1271,15 +1386,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 3
+  m_Sprite: {fileID: 21300000, guid: c694a11e6a1b43f5b4ea916723f0bf8a, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
@@ -1444,15 +1559,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.15, g: 0.15, b: 0.15, a: 0.85}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: e91165fb08f34f27b9b74e7224718abc, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1507,10 +1622,10 @@ RectTransform:
   m_Father: {fileID: 800000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 200, y: 0}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &800000008
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1532,15 +1647,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2, g: 0.6, b: 0.9, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 3
+  m_Sprite: {fileID: 21300000, guid: 953f0313ef9b4d02a7c8c72987ded2b3, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0

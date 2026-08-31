@@ -39,20 +39,35 @@ namespace Swarm.Enemy
             _freezeTimer = Mathf.Max(_freezeTimer, duration);
         }
 
+        // Movement is velocity-driven rather than Rigidbody2D.MovePosition. MovePosition forces the
+        // body onto an exact position every physics step, which overwrites whatever the contact
+        // solver just did — so enemies could not be shoved aside by the player or by each other and
+        // the whole crowd travelled as one rigid block, a faster enemy unable to work its way past a
+        // slower one. Setting velocity leaves the solver's collision impulses intact, so bodies
+        // displace each other and slide apart while still steering toward the player.
         private void FixedUpdate()
         {
             if (_freezeTimer > 0f)
             {
                 _freezeTimer -= Time.fixedDeltaTime;
+                _rigidbody.linearVelocity = Vector2.zero;
                 return;
             }
 
-            if (_target == null) return;
+            if (_target == null)
+            {
+                _rigidbody.linearVelocity = Vector2.zero;
+                return;
+            }
 
             var direction = (Vector2)_target.position - _rigidbody.position;
-            if (direction.sqrMagnitude < 0.0001f) return;
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                _rigidbody.linearVelocity = Vector2.zero;
+                return;
+            }
 
-            _rigidbody.MovePosition(_rigidbody.position + direction.normalized * (moveSpeed * _speedMultiplier * Time.fixedDeltaTime));
+            _rigidbody.linearVelocity = direction.normalized * (moveSpeed * _speedMultiplier);
         }
     }
 }
