@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c444d408b1f3419b8f58b273bf67189c, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: ProjectileCountRunPassive
   m_EditorClassIdentifier:
   displayName: 투사체 증가
   description: 투사체 무기의 발사 개수 +1
   maxLevel: 5
+  stat: 9
   amountPerLevel: 1

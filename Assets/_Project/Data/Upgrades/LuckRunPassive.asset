@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 797d8d372a14456b8ce39b71683d68f6, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: LuckRunPassive
   m_EditorClassIdentifier:
   displayName: 행운
   description: 행운이 증가합니다 (효과는 추후 연동 예정)
   maxLevel: 5
-  percentPerLevel: 0.1
+  stat: 11
+  amountPerLevel: 0.1

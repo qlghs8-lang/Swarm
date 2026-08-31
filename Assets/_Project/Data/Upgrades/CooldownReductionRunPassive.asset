@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34f6b58142374c21b97b3ce37989d4fe, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: CooldownReductionRunPassive
   m_EditorClassIdentifier:
   displayName: 쿨타임 감소
   description: 무기 쿨타임 -6%
   maxLevel: 5
-  percentPerLevel: 0.06
+  stat: 6
+  amountPerLevel: 0.06

@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b8cc24e40b945988e641fe01837ff2c, type: 3}
+  m_Script: {fileID: 11500000, guid: d4f7c31c6ea07d41b259a8ea3fc06d74, type: 3}
   m_Name: PassiveMagnetUpgrade
   m_EditorClassIdentifier:
   id: magnet
@@ -17,4 +17,5 @@ MonoBehaviour:
   baseCost: 12
   costIncreasePerLevel: 6
   maxLevel: 5
+  stat: 8
   amountPerLevel: 1

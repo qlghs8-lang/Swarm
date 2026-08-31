@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88c6fbcfcf764a1b9a46f8eea991f9cb, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: MoveSpeedRunPassive
   m_EditorClassIdentifier:
   displayName: 이동속도 강화
   description: 이동속도 +10%
   maxLevel: 5
-  percentPerLevel: 0.1
+  stat: 4
+  amountPerLevel: 0.1

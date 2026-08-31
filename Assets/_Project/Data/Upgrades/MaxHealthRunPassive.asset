@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 778b4da6e3e44d719a21b978e51df904, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: MaxHealthRunPassive
   m_EditorClassIdentifier:
   displayName: 체력 강화
   description: 최대 체력 +20
   maxLevel: 5
+  stat: 3
   amountPerLevel: 20

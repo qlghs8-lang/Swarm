@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bac9693270944ac902d04401470af65, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: DefenseRunPassive
   m_EditorClassIdentifier:
   displayName: 방어력 강화
   description: 받는 피해 -5%
   maxLevel: 5
-  percentPerLevel: 0.05
+  stat: 5
+  amountPerLevel: 0.05

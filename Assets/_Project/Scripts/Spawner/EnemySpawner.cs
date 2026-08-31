@@ -20,6 +20,17 @@ namespace Swarm.Spawner
         [SerializeField] private float spawnIntervalMin = 0.5f;
         [SerializeField] private float spawnRateRampDuration = 480f;
         [SerializeField] private float spawnRadius = 8f;
+
+        [Header("Crowd control")]
+        // Nothing removed enemies except killing them, so anything slower than the player (the
+        // tank moves at 1 against the player's 4) trailed behind forever and the live count only
+        // ever grew. Raising the spawn rate on top of that makes the count diverge instead of
+        // settling, which breaks both the frame rate and any attempt to measure difficulty.
+        [SerializeField] private int maxActiveEnemies = 150;
+        [SerializeField] private float recycleDistance = 22f;
+        [SerializeField] private float recycleCheckInterval = 0.5f;
+
+        [Header("Difficulty")]
         [SerializeField] private float maxHealthMultiplierEnd = 2.5f;
         [SerializeField] private float defenseBonusEnd = 0.25f;
         [SerializeField] private float magicDefenseBonusEnd = 0.25f;
@@ -32,12 +43,18 @@ namespace Swarm.Spawner
         public event System.Action<EnemyHealth> OnBossSpawned;
         public event System.Action<int> OnWaveTriggered;
 
+        /// <summary>Live enemies this spawner is responsible for. Excludes the boss and any
+        /// enemies placed by other systems, such as the test stage's training dummies.</summary>
+        public int ActiveEnemyCount => _active.Count;
+
         private Transform _target;
         private float _timer;
         private float _elapsedTime;
+        private float _recycleTimer;
         private int _nextWaveIndex;
         private bool _bossSpawned;
         private readonly Dictionary<GameObject, ObjectPool> _pools = new();
+        private readonly List<GameObject> _active = new();
 
         private void Start()
         {
@@ -68,8 +85,62 @@ namespace Swarm.Spawner
                 SpawnEnemy();
             }
 
+            _recycleTimer += Time.deltaTime;
+            if (_recycleTimer >= recycleCheckInterval)
+            {
+                _recycleTimer = 0f;
+                SweepActiveEnemies();
+            }
+
             CheckWaveTriggers();
             CheckBossSpawn();
+        }
+
+        /// <summary>
+        /// Drops enemies that have died back out of the tracking list, and teleports the ones that
+        /// have fallen too far behind to a fresh position around the player. Recycling rather than
+        /// despawning keeps the pressure — and the experience and gold they are still carrying —
+        /// in play; the distance is far enough off-screen that the move is never visible.
+        /// </summary>
+        private void SweepActiveEnemies()
+        {
+            var recycleDistanceSqr = recycleDistance * recycleDistance;
+
+            for (var i = _active.Count - 1; i >= 0; i--)
+            {
+                var enemy = _active[i];
+
+                // Released to the pool (killed) or destroyed outright.
+                if (enemy == null || !enemy.activeInHierarchy)
+                {
+                    _active.RemoveAt(i);
+                    continue;
+                }
+
+                var offset = (Vector2)enemy.transform.position - (Vector2)_target.position;
+                if (offset.sqrMagnitude < recycleDistanceSqr) continue;
+
+                MoveTo(enemy, GetSpawnPosition());
+            }
+        }
+
+        private Vector2 GetSpawnPosition()
+        {
+            var angle = Random.Range(0f, Mathf.PI * 2f);
+            var offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
+            return (Vector2)_target.position + offset;
+        }
+
+        // Physics2D.autoSyncTransforms is off, so moving only the Transform would leave the
+        // collider registered at the old position until the next physics step — long enough for a
+        // weapon's targeting query to find this enemy back where it came from.
+        private static void MoveTo(GameObject enemy, Vector2 position)
+        {
+            enemy.transform.position = position;
+            if (enemy.TryGetComponent<Rigidbody2D>(out var body))
+            {
+                body.position = position;
+            }
         }
 
         private void CheckWaveTriggers()
@@ -83,7 +154,9 @@ namespace Swarm.Spawner
 
             for (var i = 0; i < burstCount; i++)
             {
-                SpawnEnemy();
+                // A wave is a deliberate spike, so it is allowed past the cap rather than being
+                // silently swallowed when the field is already full.
+                SpawnEnemy(ignoreCap: true);
             }
 
             OnWaveTriggered?.Invoke(_nextWaveIndex + 1);
@@ -96,11 +169,7 @@ namespace Swarm.Spawner
 
             _bossSpawned = true;
 
-            var angle = Random.Range(0f, Mathf.PI * 2f);
-            var offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
-            var spawnPosition = (Vector2)_target.position + offset;
-
-            var instance = Instantiate(bossPrefab, spawnPosition, Quaternion.identity);
+            var instance = Instantiate(bossPrefab, GetSpawnPosition(), Quaternion.identity);
             if (instance.TryGetComponent<EnemyHealth>(out var health))
             {
                 health.ResetHealth();
@@ -108,17 +177,15 @@ namespace Swarm.Spawner
             }
         }
 
-        private void SpawnEnemy()
+        private void SpawnEnemy(bool ignoreCap = false)
         {
+            if (!ignoreCap && _active.Count >= maxActiveEnemies) return;
+
             var prefab = PickWeightedPrefab();
             if (prefab == null) return;
 
-            var angle = Random.Range(0f, Mathf.PI * 2f);
-            var offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
-            var spawnPosition = (Vector2)_target.position + offset;
-
             var pool = _pools[prefab];
-            var instance = pool.Get(spawnPosition, Quaternion.identity);
+            var instance = pool.Get(GetSpawnPosition(), Quaternion.identity);
 
             if (instance.TryGetComponent<EnemyHealth>(out var health))
             {
@@ -132,6 +199,8 @@ namespace Swarm.Spawner
 
                 health.ResetHealth();
             }
+
+            _active.Add(instance);
         }
 
         private GameObject PickWeightedPrefab()

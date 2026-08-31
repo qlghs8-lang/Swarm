@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c638400622444b09987461fb8d27b5a, type: 3}
+  m_Script: {fileID: 11500000, guid: c3e6b20b5d9f6c30a148f7d92ebf5c63, type: 3}
   m_Name: AreaSizeRunPassive
   m_EditorClassIdentifier:
   displayName: 범위 증가
   description: 범위 무기의 크기 +15%
   maxLevel: 5
-  percentPerLevel: 0.15
+  stat: 10
+  amountPerLevel: 0.15
