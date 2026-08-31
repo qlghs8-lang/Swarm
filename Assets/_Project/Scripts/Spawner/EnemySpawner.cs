@@ -15,18 +15,38 @@ namespace Swarm.Spawner
             public float unlockTime;
         }
 
+        [System.Serializable]
+        private struct WaveDefinition
+        {
+            [Tooltip("화면에 띄울 문구. 비우면 WAVE n")] public string label;
+            public float time;
+            public int count;
+            [Tooltip("비우면 일반 스폰 풀에서 추첨")] public GameObject prefab;
+            [Tooltip("0이면 사방. 90이면 무작위 한 방향 ±45도에 몰아서 스폰")] public float arcDegrees;
+        }
+
         [SerializeField] private EnemySpawnEntry[] enemyEntries;
         [SerializeField] private float spawnInterval = 1.5f;
         [SerializeField] private float spawnIntervalMin = 0.5f;
         [SerializeField] private float spawnRateRampDuration = 480f;
         [SerializeField] private float spawnRadius = 8f;
 
+        // Enemies used to appear evenly all around, so running in a straight line simply outran
+        // half of them and parted the rest — the player could never actually be enclosed. Biasing
+        // spawns toward where the player is heading means the ground they flee onto already has
+        // enemies on it, which is what makes being surrounded possible at all.
+        [SerializeField, Range(0f, 1f)] private float forwardSpawnBias = 0.6f;
+        [SerializeField] private float forwardArcDegrees = 180f;
+
         [Header("Crowd control")]
         // Nothing removed enemies except killing them, so anything slower than the player (the
         // tank moves at 1 against the player's 4) trailed behind forever and the live count only
         // ever grew. Raising the spawn rate on top of that makes the count diverge instead of
         // settling, which breaks both the frame rate and any attempt to measure difficulty.
-        [SerializeField] private int maxActiveEnemies = 150;
+        // 150 was a guess; measured at ~2.2ms/frame (400-500 FPS) with 150 on screen, so the
+        // cap was nowhere near the performance ceiling. Raised so the field can reach its real
+        // equilibrium instead of being clipped by the cap before it gets there.
+        [SerializeField] private int maxActiveEnemies = 400;
         [SerializeField] private float recycleDistance = 22f;
         [SerializeField] private float recycleCheckInterval = 0.5f;
 
@@ -37,17 +57,17 @@ namespace Swarm.Spawner
         [SerializeField] private float difficultyRampDuration = 600f;
         [SerializeField] private GameObject bossPrefab;
         [SerializeField] private float bossSpawnTime = 600f;
-        [SerializeField] private float[] waveTimes = { 180f, 360f, 540f };
-        [SerializeField] private int[] waveBurstCounts = { 8, 14, 20 };
+        [SerializeField] private WaveDefinition[] waves;
 
         public event System.Action<EnemyHealth> OnBossSpawned;
-        public event System.Action<int> OnWaveTriggered;
+        public event System.Action<string> OnWaveTriggered;
 
         /// <summary>Live enemies this spawner is responsible for. Excludes the boss and any
         /// enemies placed by other systems, such as the test stage's training dummies.</summary>
         public int ActiveEnemyCount => _active.Count;
 
         private Transform _target;
+        private Rigidbody2D _targetBody;
         private float _timer;
         private float _elapsedTime;
         private float _recycleTimer;
@@ -59,7 +79,11 @@ namespace Swarm.Spawner
         private void Start()
         {
             var player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) _target = player.transform;
+            if (player != null)
+            {
+                _target = player.transform;
+                player.TryGetComponent(out _targetBody);
+            }
 
             foreach (var entry in enemyEntries)
             {
@@ -126,8 +150,25 @@ namespace Swarm.Spawner
 
         private Vector2 GetSpawnPosition()
         {
-            var angle = Random.Range(0f, Mathf.PI * 2f);
-            var offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
+            var heading = _targetBody != null ? _targetBody.linearVelocity : Vector2.zero;
+
+            if (heading.sqrMagnitude > 0.25f && Random.value < forwardSpawnBias)
+            {
+                var headingDegrees = Mathf.Atan2(heading.y, heading.x) * Mathf.Rad2Deg;
+                return PositionOnArc(headingDegrees, forwardArcDegrees);
+            }
+
+            return PositionOnArc(Random.Range(0f, 360f), 360f);
+        }
+
+        /// <summary>A point on the spawn ring, within <paramref name="arcDegrees"/> centred on
+        /// <paramref name="centreDegrees"/>. A full 360 arc is the old even ring.</summary>
+        private Vector2 PositionOnArc(float centreDegrees, float arcDegrees)
+        {
+            var half = Mathf.Max(0f, arcDegrees) * 0.5f;
+            var degrees = centreDegrees + Random.Range(-half, half);
+            var radians = degrees * Mathf.Deg2Rad;
+            var offset = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * spawnRadius;
             return (Vector2)_target.position + offset;
         }
 
@@ -145,21 +186,26 @@ namespace Swarm.Spawner
 
         private void CheckWaveTriggers()
         {
-            if (_nextWaveIndex >= waveTimes.Length) return;
-            if (_elapsedTime < waveTimes[_nextWaveIndex]) return;
+            if (waves == null || _nextWaveIndex >= waves.Length) return;
+            if (_elapsedTime < waves[_nextWaveIndex].time) return;
 
-            var burstCount = _nextWaveIndex < waveBurstCounts.Length
-                ? waveBurstCounts[_nextWaveIndex]
-                : waveBurstCounts[^1];
+            var wave = waves[_nextWaveIndex];
 
-            for (var i = 0; i < burstCount; i++)
+            // One direction is picked for the whole wave, so a wave with a narrow arc arrives as a
+            // single mass from one side instead of trickling in from everywhere at once.
+            var centreDegrees = Random.Range(0f, 360f);
+            var arc = wave.arcDegrees > 0f ? wave.arcDegrees : 360f;
+
+            for (var i = 0; i < wave.count; i++)
             {
                 // A wave is a deliberate spike, so it is allowed past the cap rather than being
                 // silently swallowed when the field is already full.
-                SpawnEnemy(ignoreCap: true);
+                SpawnEnemy(ignoreCap: true, prefabOverride: wave.prefab,
+                           position: PositionOnArc(centreDegrees, arc));
             }
 
-            OnWaveTriggered?.Invoke(_nextWaveIndex + 1);
+            var label = string.IsNullOrWhiteSpace(wave.label) ? $"WAVE {_nextWaveIndex + 1}" : wave.label;
+            OnWaveTriggered?.Invoke(label);
             _nextWaveIndex++;
         }
 
@@ -177,15 +223,22 @@ namespace Swarm.Spawner
             }
         }
 
-        private void SpawnEnemy(bool ignoreCap = false)
+        private void SpawnEnemy(bool ignoreCap = false, GameObject prefabOverride = null, Vector2? position = null)
         {
             if (!ignoreCap && _active.Count >= maxActiveEnemies) return;
 
-            var prefab = PickWeightedPrefab();
+            var prefab = prefabOverride != null ? prefabOverride : PickWeightedPrefab();
             if (prefab == null) return;
 
-            var pool = _pools[prefab];
-            var instance = pool.Get(GetSpawnPosition(), Quaternion.identity);
+            // A wave prefab need not be in the regular rotation — the fast enemy is wave-only —
+            // so its pool is created on demand rather than only in Start.
+            if (!_pools.TryGetValue(prefab, out var pool))
+            {
+                pool = new ObjectPool(prefab);
+                _pools[prefab] = pool;
+            }
+
+            var instance = pool.Get(position ?? GetSpawnPosition(), Quaternion.identity);
 
             if (instance.TryGetComponent<EnemyHealth>(out var health))
             {

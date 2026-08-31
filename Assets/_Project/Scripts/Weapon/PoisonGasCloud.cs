@@ -14,9 +14,10 @@ namespace Swarm.Weapon
         private const float OutroFrameDuration = 0.15f;
         private const int IntroFrameCount = 3;
         private const int OutroFrameCount = 2;
-        // Raw multiplier on the AoE radius, calibrated by eye against the actual drawn puddle
-        // footprint (art doesn't fill the full 64px canvas, so a literal radius*2 reads too small).
-        private const float VisualScaleMultiplier = 4.0f;
+        // Raw multiplier on the AoE radius. poisondash1.aseprite is a 64px canvas at PPU 100 with a
+        // centre pivot; the puddle reaches the canvas edge, i.e. 32px = 0.32 world units per side at
+        // scale 1. 1 / 0.32 = 3.125 makes the drawn puddle's half-width equal the damage radius.
+        private const float VisualScaleMultiplier = 3.125f;
 
         private float _radius;
         private float _duration;

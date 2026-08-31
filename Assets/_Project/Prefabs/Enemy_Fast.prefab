@@ -202,7 +202,7 @@ MonoBehaviour:
   experiencePickupPrefab: {fileID: 4000000000000000001, guid: 37852e5ce3b9499498fed1e30736c6b9, type: 3}
   experienceReward: 4
   goldPickupPrefab: {fileID: 5000000000000000001, guid: d25c0962ce974e8cb4c8a294a85188a4, type: 3}
-  goldDropChance: 0.08
+  goldDropChance: 0.025
   dropScatterRadius: 0.5
   damageNumberPrefab: {fileID: 6000000000000000001, guid: 939040dee52047db8e60f4f991352ab5, type: 3}
 --- !u!95 &3141104714924203760

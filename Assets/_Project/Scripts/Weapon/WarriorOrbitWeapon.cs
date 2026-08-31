@@ -6,6 +6,11 @@ namespace Swarm.Weapon
 {
     public class WarriorOrbitWeapon : LevelableWeapon
     {
+        // Blade art (sword2/sword3.aseprite) is a 64px canvas at PPU 100 with a centre pivot; the
+        // sword spans 62px vertically, i.e. 0.31 world units from the pivot to the tip at scale 1.
+        // Scaling by hitRadius / 0.31 makes the drawn sword span the blade's hit circle diameter.
+        private const float BladeSpriteHalfLengthUnits = 0.31f;
+
         [SerializeField] private OrbitWeaponData data;
         [SerializeField] private Sprite bladeSprite;
         [SerializeField] private Color bladeColor = new(0.3f, 0.6f, 1f, 0.9f);
@@ -61,6 +66,7 @@ namespace Swarm.Weapon
             {
                 var angle = _sharedAngleDegrees + 360f / _blades.Count * i;
                 _blades[i].Configure(transform, orbitRadius, angle, hitRadius);
+                _blades[i].transform.localScale = Vector3.one * (hitRadius / BladeSpriteHalfLengthUnits);
                 _blades[i].SetCombatStats(damage, hitCooldown, penetration);
             }
         }

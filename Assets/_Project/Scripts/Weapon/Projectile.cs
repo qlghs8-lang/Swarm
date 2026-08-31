@@ -26,6 +26,18 @@ namespace Swarm.Weapon
         private bool _isLaunched;
         private readonly HashSet<Collider2D> _hitColliders = new();
 
+        // 0 at the muzzle, 1 at the edge of the weapon's range. FireballAnimator reads this to fade
+        // the flame out by distance instead of by a timer, so the burnout lands with the despawn
+        // no matter how speed or range are tuned.
+        public float TravelProgress
+        {
+            get
+            {
+                if (!_isLaunched || _maxRange <= 0f) return 0f;
+                return Mathf.Clamp01(((Vector2)transform.position - _startPosition).magnitude / _maxRange);
+            }
+        }
+
         public void Launch(Vector2 direction, float speed, float maxRange, int damage, ObjectPool pool, int pierceCount = 0, DamageStatType damageType = DamageStatType.AttackPower, float penetration = 0f, System.Action<Vector2> onHit = null)
         {
             _direction = direction;

@@ -65,7 +65,13 @@ namespace Swarm.Weapon
         {
             var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
             var radius = data.Radius * (1f + (_stats != null ? _stats.AreaSizeBonus : 0f));
-            var targetCount = baseTargetCount + (Level - 1) / levelsPerExtraTarget;
+            // Projectile Count is the mage's synergy passive here, the same way Area Size is the
+            // warrior's: without it the strike hit a fixed handful no matter how thick the crowd
+            // got, so damage scattered across a re-picked nearest-N every cast and nothing ever
+            // reached its health total.
+            var targetCount = baseTargetCount
+                              + (Level - 1) / levelsPerExtraTarget
+                              + (_stats != null ? _stats.ProjectileCountBonus : 0);
             EnemyTargeting.FindMultiple(origin, radius, targetCount, _targetBuffer);
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;

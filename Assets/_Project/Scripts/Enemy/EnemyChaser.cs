@@ -7,6 +7,13 @@ namespace Swarm.Enemy
     {
         [SerializeField] private float moveSpeed = 2f;
 
+        // How fast an enemy can change its velocity. This is what makes a crowd pushable: with the
+        // velocity assigned outright every physics step, any shove the player landed was erased
+        // 0.02s later and the wall regenerated instantly — impossible to escape once 200 deep.
+        // Accelerating instead lets a shoved enemy keep drifting away for a moment, which is the
+        // gap the player leaves through.
+        [SerializeField] private float acceleration = 25f;
+
         private Rigidbody2D _rigidbody;
         private Transform _target;
         private float _speedMultiplier = 1f;
@@ -67,7 +74,9 @@ namespace Swarm.Enemy
                 return;
             }
 
-            _rigidbody.linearVelocity = direction.normalized * (moveSpeed * _speedMultiplier);
+            var desired = direction.normalized * (moveSpeed * _speedMultiplier);
+            _rigidbody.linearVelocity = Vector2.MoveTowards(
+                _rigidbody.linearVelocity, desired, acceleration * Time.fixedDeltaTime);
         }
     }
 }

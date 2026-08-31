@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8bd0e6dc86641ddb9cf7ced448c7357, type: 3}
   m_Name: ArcherArrowWeaponData
   m_EditorClassIdentifier: 
-  damage: 12
+  damage: 16
   attackInterval: 0.9
   projectileSpeed: 10
   projectilePrefab: {fileID: 4232242595865490737, guid: 482368538a7da2d4a9e0acb324d5cf83, type: 3}
   range: 7
-  projectileCount: 1
+  projectileCount: 4
   spreadAngleDegrees: 0

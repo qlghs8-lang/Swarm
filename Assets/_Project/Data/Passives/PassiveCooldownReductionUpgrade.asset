@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   id: cooldown
   displayName: 쿨타임 감소
-  baseCost: 15
-  costIncreasePerLevel: 8
-  maxLevel: 5
+  baseCost: 25
+  costIncreasePerLevel: 10
+  maxLevel: 10
   stat: 6
   amountPerLevel: 0.04

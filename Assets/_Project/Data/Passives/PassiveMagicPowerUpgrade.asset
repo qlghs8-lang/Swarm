@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   id: magicpower
   displayName: 마력 강화
-  baseCost: 10
-  costIncreasePerLevel: 5
-  maxLevel: 5
+  baseCost: 18
+  costIncreasePerLevel: 7
+  maxLevel: 10
   stat: 2
   amountPerLevel: 0.05

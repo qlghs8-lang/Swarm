@@ -20,7 +20,10 @@ namespace Swarm.Weapon
         [SerializeField] private Material effectMaterial;
 
         private static readonly float[] StepEffectOriginOffset = { 0.3f, 0.52f, 0.15f };
-        private static readonly float[] StepEffectReferenceRadius = { 0.5f, 0.83f, 0.45f };
+        // Per step: StepEffectOriginOffset + (art's forward reach in px / PPU 100), so the artwork's
+        // leading edge lands on the step's AoE radius. Slash/Thrust reach 31px right of the 64px canvas
+        // centre; Slam is drawn facing -Y and reaches 32px down. Steps are { Slash, Thrust, Slam }.
+        private static readonly float[] StepEffectReferenceRadius = { 0.61f, 0.83f, 0.47f };
         // Slam artwork is drawn facing down (-Y) instead of right (+X) like Slash/Thrust, so its rotation needs a +90° correction.
         private static readonly float[] StepEffectRotationOffsetDegrees = { 0f, 0f, 90f };
 

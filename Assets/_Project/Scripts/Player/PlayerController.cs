@@ -9,6 +9,12 @@ namespace Swarm.Player
         [SerializeField] private float moveSpeed = 4f;
         [SerializeField] private VirtualJoystick joystick;
 
+        // Shoulder force applied to enemies the player is pressed against, but only while actually
+        // moving — standing still should not part the crowd. Paired with EnemyChaser's
+        // acceleration, this is what turns "walled in until you kill your way out" into "spend
+        // health, shove through, escape".
+        [SerializeField] private float crowdPushForce = 40f;
+
         private static readonly int IsMovingParam = Animator.StringToHash("IsMoving");
 
         private Rigidbody2D _rigidbody;
@@ -71,6 +77,20 @@ namespace Swarm.Player
         // exact path every step, so the crowd read as an immovable wall instead of something you can
         // shove a way through. With velocity the player's contacts push enemies aside, and the
         // player's Rigidbody2D mass controls how hard.
+        private void OnCollisionStay2D(Collision2D collision)
+        {
+            if (_moveInput == Vector2.zero) return;
+            if (!collision.collider.CompareTag("Enemy")) return;
+
+            var body = collision.rigidbody;
+            if (body == null) return;
+
+            var away = body.position - _rigidbody.position;
+            if (away.sqrMagnitude < 0.0001f) return;
+
+            body.AddForce(away.normalized * crowdPushForce, ForceMode2D.Force);
+        }
+
         private void FixedUpdate()
         {
             var effectiveSpeed = moveSpeed * (1f + (_stats != null ? _stats.MoveSpeedBonus : 0f));

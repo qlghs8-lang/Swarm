@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   id: magnet
   displayName: 자석
-  baseCost: 12
-  costIncreasePerLevel: 6
-  maxLevel: 5
+  baseCost: 22
+  costIncreasePerLevel: 8
+  maxLevel: 10
   stat: 8
   amountPerLevel: 1

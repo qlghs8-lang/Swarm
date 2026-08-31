@@ -62,7 +62,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 28f4d738ad049b347874289579af3f19, type: 2}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -181,10 +181,16 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 405c19c559871734583e97cc094cb0fe, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Swarm.Weapon.FireballAnimator
+  m_EditorClassIdentifier: Swarm.Runtime::Swarm.Weapon.FireballAnimator
   frames:
   - {fileID: 8676363195562792351, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
   - {fileID: -903273748831948648, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
   - {fileID: -2273215229090433386, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
   - {fileID: 8496896088147739640, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
-  frameDuration: 0.06
+  - {fileID: -2052017142546343998, guid: f06250c99a294e342a7e9cf21d122bf6, type: 3}
+  introFrameCount: 1
+  introFrameDuration: 0.05
+  cruiseFrameCount: 2
+  cruiseFrameDuration: 0.08
+  expireFrameCount: 2
+  expireStartProgress: 0.85

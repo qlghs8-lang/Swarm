@@ -6,6 +6,11 @@ namespace Swarm.Weapon
 {
     public class WarriorSwordChasingWeapon : LevelableWeapon
     {
+        // Blade art (sword2/sword3.aseprite) is a 64px canvas at PPU 100 with a centre pivot; the
+        // sword spans 62px vertically, i.e. 0.31 world units from the pivot to the tip at scale 1.
+        // Scaling by hitRadius / 0.31 makes the drawn sword span the blade's hit circle diameter.
+        private const float BladeSpriteHalfLengthUnits = 0.31f;
+
         [SerializeField] private OrbitWeaponData data;
         [SerializeField] private float chaseRange = 4f;
         [SerializeField] private float chaseSpeed = 10f;
@@ -64,6 +69,7 @@ namespace Swarm.Weapon
             {
                 var angle = _sharedAngleDegrees + 360f / _blades.Count * i;
                 _blades[i].Configure(transform, orbitRadius, angle, hitRadius, chaseRange, chaseSpeed, swoopDistance, _blades);
+                _blades[i].transform.localScale = Vector3.one * (hitRadius / BladeSpriteHalfLengthUnits);
                 _blades[i].SetCombatStats(damage, hitCooldown, penetration);
             }
         }

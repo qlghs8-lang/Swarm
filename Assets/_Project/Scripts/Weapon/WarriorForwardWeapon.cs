@@ -13,7 +13,11 @@ namespace Swarm.Weapon
         private const float IndicatorDuration = 0.15f;
         private const int FanSegments = 16;
         private const float SlashOriginOffset = 0.32f;
-        private const float SlashEffectReferenceRadius = 0.6f;
+        // Calibrated so the slash art's outer edge lands exactly on the AoE radius.
+        // SlashEffect.aseprite: 64px canvas, PPU 50, centre-pivot, art reaches 31px right of centre
+        // => 0.62 world units at scale 1. Effect is placed at origin + facing * (SlashOriginOffset * scale),
+        // so reach = scale * (0.32 + 0.62). Setting the reference to that sum makes scale = radius / reach.
+        private const float SlashEffectReferenceRadius = 0.94f;
 
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float forwardAngleDegrees = 150f;

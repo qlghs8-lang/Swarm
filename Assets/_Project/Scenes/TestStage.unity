@@ -298,8 +298,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cb0221604660e0428e5cd840cb7e329, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Player.PlayerController
-  moveSpeed: 4
+  moveSpeed: 3
   joystick: {fileID: 1100000014}
+  crowdPushForce: 40
 --- !u!58 &227348258
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -544,7 +545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e266f137544e9d819dc524ff836360, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Player.PlayerExperience
-  baseExpToLevel: 10
+  baseExpToLevel: 40
 --- !u!114 &227348267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -648,7 +649,7 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.08
   evolutionTarget: {fileID: 227348280}
   data: {fileID: 11400000, guid: 4d5d94a344b04e5bb9330cd7003dfb18, type: 2}
-  baseTargetCount: 2
+  baseTargetCount: 8
   levelsPerExtraTarget: 2
   strikeFlashPrefab: {fileID: 8000000000000000001, guid: 0b8e2c0f83a74163ad356644b0dc7c43, type: 3}
 --- !u!114 &227348272
@@ -722,8 +723,8 @@ MonoBehaviour:
   description: "\uC804\uBC29\uBCA0\uAE30-\uCC0C\uB974\uAE30-\uB0B4\uB824\uCC0D\uAE30\uB97C
     \uC21C\uC11C\uB300\uB85C \uBC18\uBCF5 \uACF5\uACA9\uD569\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   steps:
   - {fileID: 11400000, guid: 190455e5b7de42a69ef56413b0a65f11, type: 2}
@@ -768,8 +769,8 @@ MonoBehaviour:
     \uC5F0\uC18D \uACF5\uACA9\uD558\uACE0, \uC801\uC774 \uC5C6\uC73C\uBA74 \uB2E4\uC2DC
     \uACF5\uC804\uD569\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: 09e7eea617f64d1c84e387a3232aa18a, type: 2}
   chaseRange: 4
@@ -793,8 +794,8 @@ MonoBehaviour:
   description: "\uD761\uD608 \uBC1C\uB3D9 \uC2DC 10% \uD655\uB960\uB85C \uACF5\uACA9\uB825/\uCD5C\uB300
     \uCCB4\uB825 \uC601\uAD6C \uC99D\uAC00"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: 6256583940464afc9b307c6e3d14f099, type: 2}
   procChance: 0.1
@@ -827,8 +828,8 @@ MonoBehaviour:
     \uD55C \uC801\uC5D0\uAC8C \uC804\uBD80 \uC9D1\uC911\uC2DC\uCF1C \uD3ED\uBC1C\uC801\uC778
     \uD53C\uD574\uB97C \uC785\uD799\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: dbc58be10ddd45f697ee3d68ed8d8f5f, type: 2}
   burstInterval: 0.06
@@ -853,8 +854,8 @@ MonoBehaviour:
   description: "\uAD00\uD1B5\uD558\uB294 \uD654\uC0B4\uC744 360\uB3C4\uB85C \uD68C\uC804\uD558\uBA70
     \uB09C\uC0AC\uD569\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: c317681722d04f10acfd11658824c888, type: 2}
   rotationSpeed: 90
@@ -875,8 +876,8 @@ MonoBehaviour:
     \uB0A8\uACA8 \uB3C4\uD2B8\uB51C\uACFC \uBC29\uC5B4\uB825\xB7\uC774\uB3D9\uC18D\uB3C4
     \uAC10\uC18C \uB514\uBC84\uD504\uB97C \uC90D\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   rollDistance: 3
   rollDuration: 0.2
@@ -912,11 +913,11 @@ MonoBehaviour:
     \uC5F0\uC1C4\uC801\uC73C\uB85C \uD0C0\uACA9\uD558\uACE0, \uC77C\uC815 \uD655\uB960\uB85C
     \uC801\uC744 \uC5BC\uB9BD\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: 3552662590c84624ae3a9a43bae93b17, type: 2}
-  baseJumps: 2
+  baseJumps: 5
   levelsPerExtraJump: 2
   chainRange: 4
   freezeChance: 0.1
@@ -950,8 +951,8 @@ MonoBehaviour:
     \uC8FC\uACE0, \uD654\uC5FC \uC7A5\uD310\uC744 \uB0A8\uACA8 \uBC1F\uC740 \uC801\uC744
     \uBD88\uD0DC\uC6C1\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   data: {fileID: 11400000, guid: 94b004182b0e4a6f9f31e5e444fb74af, type: 2}
   detectRange: 8
@@ -1003,8 +1004,8 @@ MonoBehaviour:
     \uB9C8\uB825, \uBC29\uC5B4\uB825, \uB9C8\uBC95\uAD00\uD1B5\uB825, \uB2E4\uB978
     \uBB34\uAE30\uC758 \uCFE8\uD0C0\uC784 \uAC10\uC18C \uD6A8\uACFC\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4"
   maxLevel: 8
-  damagePerLevel: 0.15
-  cooldownReductionPerLevel: 0.08
+  damagePerLevel: 0.3
+  cooldownReductionPerLevel: 0.1
   evolutionTarget: {fileID: 0}
   healAmount: 20
   baseCooldown: 30
@@ -3269,26 +3270,57 @@ MonoBehaviour:
     weight: 5
     unlockTime: 0
   - prefab: {fileID: 2000000000000000001, guid: 9cb1a427d35b47f5bc2630fe69932232, type: 3}
-    weight: 3
+    weight: 0
     unlockTime: 90
   - prefab: {fileID: 3000000000000000001, guid: fb3a23014a0e44e0ace69909cf4caf6c, type: 3}
     weight: 2
     unlockTime: 240
-  spawnInterval: 1.5
-  spawnIntervalMin: 0.5
+  spawnInterval: 0.6
+  spawnIntervalMin: 0.1
   spawnRateRampDuration: 480
   spawnRadius: 8
+  forwardSpawnBias: 0.6
+  forwardArcDegrees: 180
+  maxActiveEnemies: 400
+  recycleDistance: 22
+  recycleCheckInterval: 0.5
   maxHealthMultiplierEnd: 2.5
   defenseBonusEnd: 0.25
   magicDefenseBonusEnd: 0.25
   difficultyRampDuration: 600
   bossPrefab: {fileID: 9000000000000000001, guid: ff47ba8350884d0588e9a5f5a3496b44, type: 3}
   bossSpawnTime: 600
-  waveTimes:
-  - 180
-  - 360
-  - 540
-  waveBurstCounts: 080000000e00000014000000
+  waves:
+  - label: "\uBE60\uB978 \uBB34\uB9AC"
+    time: 90
+    count: 30
+    prefab: {fileID: 2000000000000000001, guid: 9cb1a427d35b47f5bc2630fe69932232, type: 3}
+    arcDegrees: 90
+  - label: WAVE 1
+    time: 180
+    count: 40
+    prefab: {fileID: 0}
+    arcDegrees: 0
+  - label: "\uBE60\uB978 \uBB34\uB9AC"
+    time: 270
+    count: 45
+    prefab: {fileID: 2000000000000000001, guid: 9cb1a427d35b47f5bc2630fe69932232, type: 3}
+    arcDegrees: 90
+  - label: WAVE 2
+    time: 360
+    count: 60
+    prefab: {fileID: 0}
+    arcDegrees: 0
+  - label: "\uBE60\uB978 \uBB34\uB9AC"
+    time: 450
+    count: 60
+    prefab: {fileID: 2000000000000000001, guid: 9cb1a427d35b47f5bc2630fe69932232, type: 3}
+    arcDegrees: 90
+  - label: WAVE 3
+    time: 540
+    count: 80
+    prefab: {fileID: 0}
+    arcDegrees: 0
 --- !u!4 &1189014881
 Transform:
   m_ObjectHideFlags: 0

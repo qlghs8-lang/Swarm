@@ -16,6 +16,17 @@ namespace Swarm.Enemy
         [SerializeField] private float dropScatterRadius = 0.5f;
         [SerializeField] private GameObject damageNumberPrefab;
 
+        // The spawner only calls ApplyDifficulty on pooled enemies, never on the boss, so the boss
+        // used to fight with zero defence — softer than a late-game tank. These give a prefab its
+        // own baseline, which the time-based difficulty ramp then adds to.
+        [SerializeField] private float baseDefense;
+        [SerializeField] private float baseMagicDefense;
+
+        // Paid out once on death, on top of the usual drop chance. The boss is the only thing that
+        // uses it: clearing a ten-minute run needs to be worth more than the single gold pickup it
+        // was granting before.
+        [SerializeField] private int goldReward;
+
         private int _currentHealth;
         private int _currentMaxHealth;
         private float _defenseBonus;
@@ -41,6 +52,8 @@ namespace Swarm.Enemy
         private DamageStatType _poisonDamageType;
         private float _poisonPenetration;
 
+        public int GoldReward => goldReward;
+
         public event System.Action<int, int> OnHealthChanged;
         public event System.Action OnDied;
 
@@ -48,6 +61,8 @@ namespace Swarm.Enemy
         {
             _currentMaxHealth = maxHealth;
             _currentHealth = maxHealth;
+            _defenseBonus = baseDefense;
+            _magicDefenseBonus = baseMagicDefense;
         }
 
         public void SetPool(ObjectPool pool)
@@ -58,8 +73,8 @@ namespace Swarm.Enemy
         public void ApplyDifficulty(float healthMultiplier, float defenseBonus, float magicDefenseBonus)
         {
             _currentMaxHealth = Mathf.RoundToInt(maxHealth * healthMultiplier);
-            _defenseBonus = defenseBonus;
-            _magicDefenseBonus = magicDefenseBonus;
+            _defenseBonus = baseDefense + defenseBonus;
+            _magicDefenseBonus = baseMagicDefense + magicDefenseBonus;
         }
 
         public void ResetHealth()
@@ -149,8 +164,8 @@ namespace Swarm.Enemy
         public void Configure(int maxHealthOverride, float defenseBonus, float magicDefenseBonus)
         {
             _currentMaxHealth = maxHealthOverride;
-            _defenseBonus = defenseBonus;
-            _magicDefenseBonus = magicDefenseBonus;
+            _defenseBonus = baseDefense + defenseBonus;
+            _magicDefenseBonus = baseMagicDefense + magicDefenseBonus;
             ResetHealth();
         }
 
@@ -187,6 +202,9 @@ namespace Swarm.Enemy
         private void Die()
         {
             _isDead = true;
+
+            if (goldReward > 0) Swarm.Game.GoldWallet.Add(goldReward);
+
             OnDied?.Invoke();
 
             if (experiencePickupPrefab != null)

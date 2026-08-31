@@ -129,7 +129,7 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: sword3
     originalName: 
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5263158, y: 0.5}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -137,8 +137,8 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 34
-      height: 64
+      width: 19
+      height: 62
     spriteID: be1bfe6ac4a1fdc41afab09c0b0755f0
     spriteBone: []
     spriteOutline: []
@@ -147,7 +147,7 @@ ScriptedImporter:
     indices: 
     edges: []
     tessellationDetail: 0
-    uvTransform: {x: 4, y: 4}
+    uvTransform: {x: -18, y: 3}
   spriteSheetImportData: []
   tileSetImportData: []
   asepriteLayers:
@@ -167,9 +167,9 @@ ScriptedImporter:
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 15
+        x: 0
         y: 0
-        width: 34
+        width: 64
         height: 64
       spriteId: be1bfe6ac4a1fdc41afab09c0b0755f0
     linkedCells: []

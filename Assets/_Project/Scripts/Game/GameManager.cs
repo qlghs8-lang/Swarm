@@ -97,28 +97,32 @@ namespace Swarm.Game
             waveAnnouncementUI?.Show("BOSS");
         }
 
-        private void HandleWaveTriggered(int waveNumber)
+        private void HandleWaveTriggered(string label)
         {
-            waveAnnouncementUI?.Show($"WAVE {waveNumber}");
+            waveAnnouncementUI?.Show(label);
         }
 
         private void HandleGameOver()
         {
-            ShowResult("GAME OVER");
+            ShowResult("GAME OVER", 0);
         }
 
         private void HandleClear()
         {
-            ShowResult("CLEAR!");
+            // EnemyHealth.Die() has already credited the wallet; this only reports it. Destroy is
+            // deferred to the end of the frame, so the boss reference is still readable here.
+            ShowResult("CLEAR!", _boss != null ? _boss.GoldReward : 0);
         }
 
-        private void ShowResult(string title)
+        private void ShowResult(string title, int goldBonus)
         {
             if (_isGameEnded) return;
             _isGameEnded = true;
 
             resultTitleText.text = title;
-            resultTimeText.text = $"생존 시간: {FormatTime(_elapsedTime)}";
+            resultTimeText.text = goldBonus > 0
+                ? $"생존 시간: {FormatTime(_elapsedTime)}\n클리어 보너스  +{goldBonus} G"
+                : $"생존 시간: {FormatTime(_elapsedTime)}";
             resultPanel.SetActive(true);
             Time.timeScale = 0f;
         }

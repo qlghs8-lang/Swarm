@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f98096d00def07479cc9a67cc1ea8a1, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyChaser
-  moveSpeed: 1
+  moveSpeed: 2.5
 --- !u!114 &9000000000000000007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,13 +198,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ecf3950ce5e460a9093ca91b25abc2a, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyHealth
-  maxHealth: 1400
+  maxHealth: 12000
   experiencePickupPrefab: {fileID: 4000000000000000001, guid: 37852e5ce3b9499498fed1e30736c6b9, type: 3}
   experienceReward: 150
   goldPickupPrefab: {fileID: 5000000000000000001, guid: d25c0962ce974e8cb4c8a294a85188a4, type: 3}
   goldDropChance: 1
   dropScatterRadius: 1.5
   damageNumberPrefab: {fileID: 6000000000000000001, guid: 939040dee52047db8e60f4f991352ab5, type: 3}
+  baseDefense: 0.35
+  baseMagicDefense: 0.35
+  goldReward: 100
 --- !u!114 &9000000000000000009
 MonoBehaviour:
   m_ObjectHideFlags: 0

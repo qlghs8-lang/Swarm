@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07207141eef4706b9736ad15957cb68, type: 3}
   m_Name: MageBoltWeaponData
   m_EditorClassIdentifier:
-  damage: 10
+  damage: 22
   attackInterval: 1.1
   radius: 3.5

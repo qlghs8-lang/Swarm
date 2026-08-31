@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   id: max_health
   displayName: 최대 체력 강화
-  baseCost: 10
-  costIncreasePerLevel: 5
-  maxLevel: 5
+  baseCost: 18
+  costIncreasePerLevel: 7
+  maxLevel: 10
   stat: 3
   amountPerLevel: 10
