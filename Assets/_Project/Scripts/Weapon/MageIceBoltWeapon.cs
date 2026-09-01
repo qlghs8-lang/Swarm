@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
@@ -27,30 +26,19 @@ namespace Swarm.Weapon
 
         private float _timer;
         private PlayerStats _stats;
-        private SpriteRenderer _hitEffectRenderer;
-        private Coroutine _hitEffectCoroutine;
+        private SpriteEffectPlayer _hitEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
-            CreateHitEffectRenderer();
-        }
-
-        private void CreateHitEffectRenderer()
-        {
-            var effectObject = new GameObject("LightningHitEffect (Temp)");
-            effectObject.transform.localScale = Vector3.one * hitEffectScale;
-            _hitEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _hitEffectRenderer.sortingOrder = 2;
-            effectObject.SetActive(false);
+            _hitEffect = SpriteEffectPlayer.Create(
+                this, "LightningHitEffect (Temp)", null, hitEffectFrames, hitEffectFrameDuration,
+                initialScale: hitEffectScale);
         }
 
         private void OnDisable()
         {
-            if (_hitEffectRenderer != null)
-            {
-                _hitEffectRenderer.gameObject.SetActive(false);
-            }
+            _hitEffect?.Hide();
         }
 
         private void Update()
@@ -117,29 +105,7 @@ namespace Swarm.Weapon
 
         private void PlayHitEffect(Vector2 position)
         {
-            if (hitEffectFrames == null || hitEffectFrames.Length == 0) return;
-
-            _hitEffectRenderer.transform.position = position;
-
-            if (_hitEffectCoroutine != null)
-            {
-                StopCoroutine(_hitEffectCoroutine);
-            }
-
-            _hitEffectCoroutine = StartCoroutine(HitEffectRoutine());
-        }
-
-        private IEnumerator HitEffectRoutine()
-        {
-            _hitEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in hitEffectFrames)
-            {
-                _hitEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(hitEffectFrameDuration);
-            }
-
-            _hitEffectRenderer.gameObject.SetActive(false);
-            _hitEffectCoroutine = null;
+            _hitEffect?.Play(position, 0f, hitEffectScale);
         }
     }
 }

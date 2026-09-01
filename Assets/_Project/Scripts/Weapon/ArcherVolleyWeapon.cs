@@ -1,4 +1,3 @@
-using System.Collections;
 using Swarm.Player;
 using UnityEngine;
 
@@ -14,52 +13,18 @@ namespace Swarm.Weapon
         private float _timer;
         private ObjectPool _pool;
         private PlayerStats _stats;
-        private SpriteRenderer _hitEffectRenderer;
-        private Coroutine _hitEffectCoroutine;
+        private SpriteEffectPlayer _hitEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
-            CreateHitEffectRenderer();
-        }
-
-        private void CreateHitEffectRenderer()
-        {
-            var effectObject = new GameObject("VolleyHitEffect (Temp)");
-            _hitEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _hitEffectRenderer.sortingOrder = 2;
-            if (effectMaterial != null) _hitEffectRenderer.material = effectMaterial;
-            effectObject.SetActive(false);
-
-            if (effectMaterial != null && hitEffectFrames != null && hitEffectFrames.Length > 0)
-            {
-                StartCoroutine(WarmUpEffectShader(_hitEffectRenderer, hitEffectFrames[0]));
-            }
-        }
-
-        // Forces the additive shader variant to compile on scene load (one invisible on-screen
-        // frame) instead of during the player's first real hit, where a compile stutter would
-        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
-        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
-        {
-            renderer.sprite = sprite;
-            renderer.transform.position = transform.position;
-            var originalColor = renderer.color;
-            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-            renderer.gameObject.SetActive(true);
-
-            yield return null;
-
-            renderer.gameObject.SetActive(false);
-            renderer.color = originalColor;
+            _hitEffect = SpriteEffectPlayer.Create(
+                this, "VolleyHitEffect (Temp)", effectMaterial, hitEffectFrames, hitEffectFrameDuration);
         }
 
         private void OnDisable()
         {
-            if (_hitEffectRenderer != null)
-            {
-                _hitEffectRenderer.gameObject.SetActive(false);
-            }
+            _hitEffect?.Hide();
         }
 
         private void Start()
@@ -114,29 +79,7 @@ namespace Swarm.Weapon
 
         private void PlayHitEffect(Vector2 position)
         {
-            if (hitEffectFrames == null || hitEffectFrames.Length == 0) return;
-
-            _hitEffectRenderer.transform.position = position;
-
-            if (_hitEffectCoroutine != null)
-            {
-                StopCoroutine(_hitEffectCoroutine);
-            }
-
-            _hitEffectCoroutine = StartCoroutine(HitEffectRoutine());
-        }
-
-        private IEnumerator HitEffectRoutine()
-        {
-            _hitEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in hitEffectFrames)
-            {
-                _hitEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(hitEffectFrameDuration);
-            }
-
-            _hitEffectRenderer.gameObject.SetActive(false);
-            _hitEffectCoroutine = null;
+            _hitEffect?.Play(position);
         }
     }
 }

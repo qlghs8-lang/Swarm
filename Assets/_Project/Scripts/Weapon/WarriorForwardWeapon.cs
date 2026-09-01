@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
@@ -31,45 +30,14 @@ namespace Swarm.Weapon
         private PlayerStats _stats;
         private Transform _indicator;
         private Mesh _indicatorMesh;
-        private SpriteRenderer _slashEffectRenderer;
-        private Coroutine _slashEffectCoroutine;
+        private SpriteEffectPlayer _slashEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
             CreateIndicator();
-            CreateSlashEffectRenderer();
-        }
-
-        private void CreateSlashEffectRenderer()
-        {
-            var effectObject = new GameObject("SlashEffect (Temp)");
-            _slashEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _slashEffectRenderer.sortingOrder = 2;
-            if (effectMaterial != null) _slashEffectRenderer.material = effectMaterial;
-            effectObject.SetActive(false);
-
-            if (effectMaterial != null && slashEffectFrames != null && slashEffectFrames.Length > 0)
-            {
-                StartCoroutine(WarmUpEffectShader(_slashEffectRenderer, slashEffectFrames[0]));
-            }
-        }
-
-        // Forces the additive shader variant to compile on scene load (one invisible on-screen
-        // frame) instead of during the player's first real attack, where a compile stutter would
-        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
-        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
-        {
-            renderer.sprite = sprite;
-            renderer.transform.position = transform.position;
-            var originalColor = renderer.color;
-            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-            renderer.gameObject.SetActive(true);
-
-            yield return null;
-
-            renderer.gameObject.SetActive(false);
-            renderer.color = originalColor;
+            _slashEffect = SpriteEffectPlayer.Create(
+                this, "SlashEffect (Temp)", effectMaterial, slashEffectFrames, slashFrameDuration);
         }
 
         private void CreateIndicator()
@@ -93,10 +61,7 @@ namespace Swarm.Weapon
                 _indicator.gameObject.SetActive(false);
             }
 
-            if (_slashEffectRenderer != null)
-            {
-                _slashEffectRenderer.gameObject.SetActive(false);
-            }
+            _slashEffect?.Hide();
         }
 
         private void Update()
@@ -158,34 +123,9 @@ namespace Swarm.Weapon
 
         private void PlaySlashEffect(Vector2 origin, Vector2 facing, float radius)
         {
-            if (slashEffectFrames == null || slashEffectFrames.Length == 0) return;
-
             var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg;
             var scale = radius / SlashEffectReferenceRadius;
-            var transformComponent = _slashEffectRenderer.transform;
-            transformComponent.position = origin + facing * (SlashOriginOffset * scale);
-            transformComponent.rotation = Quaternion.Euler(0f, 0f, angle);
-            transformComponent.localScale = Vector3.one * scale;
-
-            if (_slashEffectCoroutine != null)
-            {
-                StopCoroutine(_slashEffectCoroutine);
-            }
-
-            _slashEffectCoroutine = StartCoroutine(SlashEffectRoutine());
-        }
-
-        private IEnumerator SlashEffectRoutine()
-        {
-            _slashEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in slashEffectFrames)
-            {
-                _slashEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(slashFrameDuration);
-            }
-
-            _slashEffectRenderer.gameObject.SetActive(false);
-            _slashEffectCoroutine = null;
+            _slashEffect?.Play(origin + facing * (SlashOriginOffset * scale), angle, scale);
         }
 
         private void ShowIndicator(Vector2 origin, Vector2 facing, float radius)

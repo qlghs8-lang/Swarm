@@ -33,7 +33,7 @@ namespace Swarm.Weapon
         // as a flash of the wrong (uncompiled fallback) color.
         private IEnumerator WarmUpStrikeFlashShader()
         {
-            var instance = Instantiate(strikeFlashPrefab, transform.position, Quaternion.identity);
+            var instance = SharedObjectPool.Get(strikeFlashPrefab, transform.position, Quaternion.identity);
             if (instance.TryGetComponent<SpriteRenderer>(out var renderer))
             {
                 var originalColor = renderer.color;
@@ -42,7 +42,7 @@ namespace Swarm.Weapon
 
             yield return null;
 
-            Destroy(instance);
+            SharedObjectPool.Release(strikeFlashPrefab, instance);
         }
 
         private void Update()
@@ -99,7 +99,11 @@ namespace Swarm.Weapon
         {
             if (strikeFlashPrefab == null) return;
 
-            Instantiate(strikeFlashPrefab, position + Vector3.up * 0.3f, Quaternion.identity);
+            var instance = SharedObjectPool.Get(strikeFlashPrefab, position + Vector3.up * 0.3f, Quaternion.identity);
+            if (instance.TryGetComponent<StrikeFlash>(out var flash))
+            {
+                flash.SetSourcePrefab(strikeFlashPrefab);
+            }
         }
     }
 }

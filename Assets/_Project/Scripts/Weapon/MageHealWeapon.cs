@@ -1,4 +1,3 @@
-using System.Collections;
 using Swarm.Player;
 using Swarm.UI;
 using UnityEngine;
@@ -18,33 +17,20 @@ namespace Swarm.Weapon
         private float _timer;
         private PlayerStats _stats;
         private PlayerHealth _health;
-        private SpriteRenderer _healEffectRenderer;
-        private Coroutine _healEffectCoroutine;
+        private SpriteEffectPlayer _healEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
             _health = GetComponent<PlayerHealth>();
-            CreateHealEffectRenderer();
-        }
-
-        private void CreateHealEffectRenderer()
-        {
-            var effectObject = new GameObject("HealEffect (Temp)");
-            effectObject.transform.SetParent(transform);
-            effectObject.transform.localPosition = Vector3.zero;
-            effectObject.transform.localScale = Vector3.one * healEffectScale;
-            _healEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _healEffectRenderer.sortingOrder = 2;
-            effectObject.SetActive(false);
+            _healEffect = SpriteEffectPlayer.Create(
+                this, "HealEffect (Temp)", null, healEffectFrames, healEffectFrameDuration,
+                parent: transform, initialScale: healEffectScale);
         }
 
         private void OnDisable()
         {
-            if (_healEffectRenderer != null)
-            {
-                _healEffectRenderer.gameObject.SetActive(false);
-            }
+            _healEffect?.Hide();
         }
 
         private void Update()
@@ -71,27 +57,7 @@ namespace Swarm.Weapon
 
         private void PlayHealEffect()
         {
-            if (healEffectFrames == null || healEffectFrames.Length == 0) return;
-
-            if (_healEffectCoroutine != null)
-            {
-                StopCoroutine(_healEffectCoroutine);
-            }
-
-            _healEffectCoroutine = StartCoroutine(HealEffectRoutine());
-        }
-
-        private IEnumerator HealEffectRoutine()
-        {
-            _healEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in healEffectFrames)
-            {
-                _healEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(healEffectFrameDuration);
-            }
-
-            _healEffectRenderer.gameObject.SetActive(false);
-            _healEffectCoroutine = null;
+            _healEffect?.PlayInPlace();
         }
 
         private void SpawnHealNumber(int amount)

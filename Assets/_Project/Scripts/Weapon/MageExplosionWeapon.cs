@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
@@ -34,53 +33,18 @@ namespace Swarm.Weapon
 
         private float _timer;
         private PlayerStats _stats;
-        private SpriteRenderer _impactEffectRenderer;
-        private Coroutine _impactEffectCoroutine;
+        private SpriteEffectPlayer _impactEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
-            CreateImpactEffectRenderer();
-        }
-
-        private void CreateImpactEffectRenderer()
-        {
-            var effectObject = new GameObject("MeteorImpactEffect (Temp)");
-            effectObject.transform.localScale = Vector3.one * meteorImpactEffectScale;
-            _impactEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _impactEffectRenderer.sortingOrder = 2;
-            if (effectMaterial != null) _impactEffectRenderer.material = effectMaterial;
-            effectObject.SetActive(false);
-
-            if (effectMaterial != null && meteorImpactEffectFrames != null && meteorImpactEffectFrames.Length > 0)
-            {
-                StartCoroutine(WarmUpEffectShader(_impactEffectRenderer, meteorImpactEffectFrames[0]));
-            }
-        }
-
-        // Forces the additive shader variant to compile on scene load (one invisible on-screen
-        // frame) instead of during the player's first real impact, where a compile stutter would
-        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
-        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
-        {
-            renderer.sprite = sprite;
-            renderer.transform.position = transform.position;
-            var originalColor = renderer.color;
-            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-            renderer.gameObject.SetActive(true);
-
-            yield return null;
-
-            renderer.gameObject.SetActive(false);
-            renderer.color = originalColor;
+            _impactEffect = SpriteEffectPlayer.Create(
+                this, "MeteorImpactEffect (Temp)", effectMaterial, meteorImpactEffectFrames, meteorImpactEffectFrameDuration);
         }
 
         private void OnDisable()
         {
-            if (_impactEffectRenderer != null)
-            {
-                _impactEffectRenderer.gameObject.SetActive(false);
-            }
+            _impactEffect?.Hide();
         }
 
         private void Update()
@@ -157,29 +121,7 @@ namespace Swarm.Weapon
 
         private void PlayImpactEffect(Vector2 position)
         {
-            if (meteorImpactEffectFrames == null || meteorImpactEffectFrames.Length == 0) return;
-
-            _impactEffectRenderer.transform.position = position;
-
-            if (_impactEffectCoroutine != null)
-            {
-                StopCoroutine(_impactEffectCoroutine);
-            }
-
-            _impactEffectCoroutine = StartCoroutine(ImpactEffectRoutine());
-        }
-
-        private IEnumerator ImpactEffectRoutine()
-        {
-            _impactEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in meteorImpactEffectFrames)
-            {
-                _impactEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(meteorImpactEffectFrameDuration);
-            }
-
-            _impactEffectRenderer.gameObject.SetActive(false);
-            _impactEffectCoroutine = null;
+            _impactEffect?.Play(position);
         }
 
         private void SpawnFirePatch(Vector2 position, float radius, int burnTick, DamageStatType damageType, float penetration)

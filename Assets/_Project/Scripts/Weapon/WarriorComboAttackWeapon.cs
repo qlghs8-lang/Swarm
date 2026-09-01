@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Swarm.Player;
 using UnityEngine;
@@ -33,8 +32,7 @@ namespace Swarm.Weapon
         private PlayerStats _stats;
         private Transform _indicator;
         private Mesh _indicatorMesh;
-        private SpriteRenderer _effectRenderer;
-        private Coroutine _effectCoroutine;
+        private SpriteEffectPlayer _effect;
 
         [System.Serializable]
         private class EffectFrameSet
@@ -46,22 +44,9 @@ namespace Swarm.Weapon
         {
             _stats = GetComponent<PlayerStats>();
             CreateIndicator();
-            CreateEffectRenderer();
-        }
-
-        private void CreateEffectRenderer()
-        {
-            var effectObject = new GameObject("ComboAttackEffect (Temp)");
-            _effectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _effectRenderer.sortingOrder = 2;
-            if (effectMaterial != null) _effectRenderer.material = effectMaterial;
-            effectObject.SetActive(false);
-
-            var warmUpSprite = FindFirstEffectFrame();
-            if (effectMaterial != null && warmUpSprite != null)
-            {
-                StartCoroutine(WarmUpEffectShader(_effectRenderer, warmUpSprite));
-            }
+            _effect = SpriteEffectPlayer.Create(
+                this, "ComboAttackEffect (Temp)", effectMaterial, null, effectFrameDuration,
+                warmUpSprite: FindFirstEffectFrame());
         }
 
         private Sprite FindFirstEffectFrame()
@@ -73,23 +58,6 @@ namespace Swarm.Weapon
             }
 
             return null;
-        }
-
-        // Forces the additive shader variant to compile on scene load (one invisible on-screen
-        // frame) instead of during the player's first real attack, where a compile stutter would
-        // otherwise show up as a flash of the wrong (uncompiled fallback) color.
-        private IEnumerator WarmUpEffectShader(SpriteRenderer renderer, Sprite sprite)
-        {
-            renderer.sprite = sprite;
-            renderer.transform.position = transform.position;
-            var originalColor = renderer.color;
-            renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-            renderer.gameObject.SetActive(true);
-
-            yield return null;
-
-            renderer.gameObject.SetActive(false);
-            renderer.color = originalColor;
         }
 
         private void CreateIndicator()
@@ -113,10 +81,7 @@ namespace Swarm.Weapon
                 _indicator.gameObject.SetActive(false);
             }
 
-            if (_effectRenderer != null)
-            {
-                _effectRenderer.gameObject.SetActive(false);
-            }
+            _effect?.Hide();
         }
 
         private void Update()
@@ -188,30 +153,7 @@ namespace Swarm.Weapon
 
             var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg + StepEffectRotationOffsetDegrees[stepIndex];
             var scale = radius / StepEffectReferenceRadius[stepIndex];
-            var transformComponent = _effectRenderer.transform;
-            transformComponent.position = hitCenter + facing * (StepEffectOriginOffset[stepIndex] * scale);
-            transformComponent.rotation = Quaternion.Euler(0f, 0f, angle);
-            transformComponent.localScale = Vector3.one * scale;
-
-            if (_effectCoroutine != null)
-            {
-                StopCoroutine(_effectCoroutine);
-            }
-
-            _effectCoroutine = StartCoroutine(EffectRoutine(frames));
-        }
-
-        private IEnumerator EffectRoutine(Sprite[] frames)
-        {
-            _effectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in frames)
-            {
-                _effectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(effectFrameDuration);
-            }
-
-            _effectRenderer.gameObject.SetActive(false);
-            _effectCoroutine = null;
+            _effect?.Play(frames, hitCenter + facing * (StepEffectOriginOffset[stepIndex] * scale), angle, scale);
         }
 
         private void ShowIndicator(Vector2 center, Vector2 facing, float radius, float angleDegrees)

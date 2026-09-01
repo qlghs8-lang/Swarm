@@ -13,10 +13,27 @@ namespace Swarm.Weapon
         private Color _startColor;
         private float _elapsed;
 
+        // Pooled rather than destroyed: the mage's lightning strike spawns one of these per target,
+        // and at eight targets a cast that is over seven a second — by far the most frequently
+        // created object in the game. Instantiate/Destroy at that rate is a steady GC drip.
+        private GameObject _sourcePrefab;
+
+        public void SetSourcePrefab(GameObject prefab)
+        {
+            _sourcePrefab = prefab;
+        }
+
         private void Awake()
         {
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _startColor = _spriteRenderer.color;
+        }
+
+        // Reuse means the previous life's faded-out colour and finished timer are still here.
+        private void OnEnable()
+        {
+            _elapsed = 0f;
+            _spriteRenderer.color = _startColor;
 
             if (frames != null && frames.Length > 0)
             {
@@ -35,7 +52,7 @@ namespace Swarm.Weapon
 
                 if (_elapsed >= frames.Length * frameDuration)
                 {
-                    Destroy(gameObject);
+                    Release();
                 }
 
                 return;
@@ -46,8 +63,14 @@ namespace Swarm.Weapon
 
             if (_elapsed >= duration)
             {
-                Destroy(gameObject);
+                Release();
             }
+        }
+
+        private void Release()
+        {
+            // A null source prefab (an instance placed by hand in a scene) falls through to Destroy.
+            SharedObjectPool.Release(_sourcePrefab, gameObject);
         }
     }
 }

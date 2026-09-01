@@ -1,4 +1,3 @@
-using System.Collections;
 using Swarm.Player;
 using Swarm.UI;
 using UnityEngine;
@@ -25,33 +24,20 @@ namespace Swarm.Weapon
         private float _timer;
         private PlayerStats _stats;
         private PlayerHealth _health;
-        private SpriteRenderer _blessingEffectRenderer;
-        private Coroutine _blessingEffectCoroutine;
+        private SpriteEffectPlayer _blessingEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
             _health = GetComponent<PlayerHealth>();
-            CreateBlessingEffectRenderer();
-        }
-
-        private void CreateBlessingEffectRenderer()
-        {
-            var effectObject = new GameObject("BlessingEffect (Temp)");
-            effectObject.transform.SetParent(transform);
-            effectObject.transform.localPosition = Vector3.zero;
-            effectObject.transform.localScale = Vector3.one * blessingEffectScale;
-            _blessingEffectRenderer = effectObject.AddComponent<SpriteRenderer>();
-            _blessingEffectRenderer.sortingOrder = 2;
-            effectObject.SetActive(false);
+            _blessingEffect = SpriteEffectPlayer.Create(
+                this, "BlessingEffect (Temp)", null, blessingEffectFrames, blessingEffectFrameDuration,
+                parent: transform, initialScale: blessingEffectScale);
         }
 
         private void OnDisable()
         {
-            if (_blessingEffectRenderer != null)
-            {
-                _blessingEffectRenderer.gameObject.SetActive(false);
-            }
+            _blessingEffect?.Hide();
         }
 
         private void Update()
@@ -86,27 +72,7 @@ namespace Swarm.Weapon
 
         private void PlayBlessingEffect()
         {
-            if (blessingEffectFrames == null || blessingEffectFrames.Length == 0) return;
-
-            if (_blessingEffectCoroutine != null)
-            {
-                StopCoroutine(_blessingEffectCoroutine);
-            }
-
-            _blessingEffectCoroutine = StartCoroutine(BlessingEffectRoutine());
-        }
-
-        private IEnumerator BlessingEffectRoutine()
-        {
-            _blessingEffectRenderer.gameObject.SetActive(true);
-            foreach (var frameSprite in blessingEffectFrames)
-            {
-                _blessingEffectRenderer.sprite = frameSprite;
-                yield return new WaitForSeconds(blessingEffectFrameDuration);
-            }
-
-            _blessingEffectRenderer.gameObject.SetActive(false);
-            _blessingEffectCoroutine = null;
+            _blessingEffect?.PlayInPlace();
         }
 
         private void SpawnHealNumber(int amount)
