@@ -23,10 +23,20 @@ namespace Swarm.Game
         [SerializeField] private BossHealthBarUI bossHealthBarUI;
         [SerializeField] private WaveAnnouncementUI waveAnnouncementUI;
 
+        // The run is designed as ten minutes to the boss plus a couple of minutes to kill it.
+        // Without a hard stop, refusing to engage the boss is a legal way to farm forever, and the
+        // spawner has been at its rate cap since 08:00 — so the longer that goes on, the further
+        // the run drifts from anything that was balanced or tested.
+        [SerializeField] private float timeLimit = 900f;
+
+        /// <summary>How long before the limit the countdown warning fires.</summary>
+        [SerializeField] private float timeLimitWarning = 60f;
+
         private float _elapsedTime;
         private bool _isGameEnded;
         private PlayerHealth _playerHealth;
         private EnemyHealth _boss;
+        private bool _warnedOfTimeLimit;
 
         private void Awake()
         {
@@ -86,7 +96,33 @@ namespace Swarm.Game
             if (_isGameEnded) return;
 
             _elapsedTime += Time.deltaTime;
-            timerText.text = FormatTime(_elapsedTime);
+
+            if (timeLimit <= 0f)
+            {
+                timerText.text = FormatTime(_elapsedTime);
+                return;
+            }
+
+            var remaining = timeLimit - _elapsedTime;
+
+            // Once the boss is out, the clock the player cares about is the one they are running
+            // out of, not the one they have survived. Before that the limit is far enough away to
+            // be noise, and counting down from 15:00 for ten minutes would just read as pressure
+            // that isn't there yet.
+            timerText.text = _boss != null ? FormatTime(remaining) : FormatTime(_elapsedTime);
+
+            if (!_warnedOfTimeLimit && timeLimitWarning > 0f && remaining <= timeLimitWarning)
+            {
+                _warnedOfTimeLimit = true;
+                waveAnnouncementUI?.Show($"남은 시간 {FormatTime(Mathf.Max(0f, remaining))}");
+            }
+
+            if (remaining <= 0f)
+            {
+                // A time-out is a loss, not a clear: the boss is the win condition, and surviving
+                // past it without killing it is exactly the case this guards against.
+                HandleGameOver();
+            }
         }
 
         private void HandleBossSpawned(EnemyHealth boss)
@@ -141,6 +177,7 @@ namespace Swarm.Game
 
         private static string FormatTime(float seconds)
         {
+            seconds = Mathf.Max(0f, seconds);
             var minutes = Mathf.FloorToInt(seconds / 60f);
             var secs = Mathf.FloorToInt(seconds % 60f);
             return $"{minutes:00}:{secs:00}";

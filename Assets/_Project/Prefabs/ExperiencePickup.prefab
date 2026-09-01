@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -85,8 +85,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  m_Color: {r: 0.2, g: 0.8, b: 0.9, a: 1}
+  m_Sprite: {fileID: 21300000, guid: a1c877b1184e7e94b055c77f0b36d5c7, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -157,7 +157,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.3
 --- !u!114 &4000000000000000006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,6 +171,11 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Game.ExperiencePickup
   amount: 5
+  smallSprite: {fileID: 21300000, guid: a1c877b1184e7e94b055c77f0b36d5c7, type: 3}
+  mediumSprite: {fileID: 21300000, guid: 60ca7797081b19af09a45c2bd64d93ac, type: 3}
+  largeSprite: {fileID: 21300000, guid: 7f7c46bca3bdb90d0660f5fa7a71d747, type: 3}
+  mediumThreshold: 10
+  largeThreshold: 30
 --- !u!114 &4000000000000000007
 MonoBehaviour:
   m_ObjectHideFlags: 0

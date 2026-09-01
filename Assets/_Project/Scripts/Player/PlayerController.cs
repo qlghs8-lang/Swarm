@@ -1,3 +1,4 @@
+using Swarm.Arena;
 using Swarm.UI;
 using UnityEngine;
 
@@ -14,6 +15,9 @@ namespace Swarm.Player
         // acceleration, this is what turns "walled in until you kill your way out" into "spend
         // health, shove through, escape".
         [SerializeField] private float crowdPushForce = 40f;
+
+        // The player's collider radius, so the sprite stops at the wall rather than half inside it.
+        private const float BoundaryInset = 0.5f;
 
         private static readonly int IsMovingParam = Animator.StringToHash("IsMoving");
 
@@ -95,6 +99,21 @@ namespace Swarm.Player
         {
             var effectiveSpeed = moveSpeed * (1f + (_stats != null ? _stats.MoveSpeedBonus : 0f));
             _rigidbody.linearVelocity = _moveInput.normalized * effectiveSpeed;
+
+            // A hard clamp rather than a wall collider: a collider would let the crowd's push
+            // force squeeze the player through the boundary, and it would fight the shove-through
+            // mechanic every time the player is pinned against the edge.
+            var clamped = ArenaBounds.Clamp(_rigidbody.position, BoundaryInset);
+            if (clamped != _rigidbody.position)
+            {
+                _rigidbody.position = clamped;
+                // Kill the outward component so the player slides along the wall instead of
+                // stalling against it while the input still points outward.
+                var outward = clamped.normalized;
+                var velocity = _rigidbody.linearVelocity;
+                var into = Vector2.Dot(velocity, outward);
+                if (into > 0f) _rigidbody.linearVelocity = velocity - outward * into;
+            }
         }
     }
 }

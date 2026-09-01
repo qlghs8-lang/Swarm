@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Swarm.Arena;
 using Swarm.Enemy;
 using Swarm.Weapon;
 using UnityEngine;
@@ -30,6 +31,9 @@ namespace Swarm.Spawner
         [SerializeField] private float spawnIntervalMin = 0.5f;
         [SerializeField] private float spawnRateRampDuration = 480f;
         [SerializeField] private float spawnRadius = 8f;
+
+        // One enemy radius plus a little, so nothing spawns clipping the wall.
+        private const float SpawnBoundaryInset = 1.5f;
 
         // Enemies used to appear evenly all around, so running in a straight line simply outran
         // half of them and parted the rest — the player could never actually be enclosed. Biasing
@@ -169,7 +173,20 @@ namespace Swarm.Spawner
             var degrees = centreDegrees + Random.Range(-half, half);
             var radians = degrees * Mathf.Deg2Rad;
             var offset = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * spawnRadius;
-            return (Vector2)_target.position + offset;
+            var position = (Vector2)_target.position + offset;
+
+            // Against the wall, half the ring is outside the arena. Mirroring the offset back
+            // inside is what makes being cornered dangerous: the crowd arrives from the open side
+            // rather than politely spawning behind the stones.
+            if (!ArenaBounds.Contains(position, SpawnBoundaryInset))
+            {
+                var mirrored = (Vector2)_target.position - offset;
+                position = ArenaBounds.Contains(mirrored, SpawnBoundaryInset)
+                    ? mirrored
+                    : ArenaBounds.Clamp(position, SpawnBoundaryInset);
+            }
+
+            return position;
         }
 
         // Physics2D.autoSyncTransforms is off, so moving only the Transform would leave the

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Swarm.Game;
 using Swarm.Player;
 using Swarm.Weapon;
 using UnityEngine;
@@ -10,6 +11,12 @@ namespace Swarm.LevelUp
     public class LevelUpManager : MonoBehaviour
     {
         private const float InvestedWeightMultiplier = 3f;
+
+        // Every upgrade in the game is finite, so a long enough run empties the pool. Rather than
+        // showing a short hand — or crashing on picks[1] — the remaining slots pay out gold, the
+        // same fallback the genre uses. Small on purpose: this is a consolation prize for a run
+        // that has run out of build, not a reason to stall the boss and farm.
+        private const int FillerGoldReward = 5;
 
         private readonly struct Candidate
         {
@@ -67,6 +74,10 @@ namespace Swarm.LevelUp
         {
             var candidates = BuildCandidates();
             var picks = PickThree(candidates);
+
+            // PickThree returns fewer than three once the pool is exhausted; the card slots below
+            // index unconditionally, so top it up here rather than at every call site.
+            while (picks.Count < 3) picks.Add(CreateFillerCard());
 
             _pickedApply1 = picks[0].Apply;
             _pickedApply2 = picks[1].Apply;
@@ -137,6 +148,12 @@ namespace Swarm.LevelUp
             }
 
             return result;
+        }
+
+        private static Candidate CreateFillerCard()
+        {
+            return new Candidate($"골드 +{FillerGoldReward}", "더 배울 것이 남지 않았다.",
+                                 () => GoldWallet.Add(FillerGoldReward), 1f);
         }
 
         private static List<Candidate> PickThree(List<Candidate> candidates)
