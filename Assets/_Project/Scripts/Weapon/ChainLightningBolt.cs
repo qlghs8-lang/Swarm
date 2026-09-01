@@ -21,6 +21,7 @@ namespace Swarm.Weapon
         private float _freezeChance;
         private float _freezeDuration;
         private float _penetration;
+        private bool _isCritical;
         private DamageStatType _damageType;
         private System.Action<Vector2> _onHit;
 
@@ -33,7 +34,7 @@ namespace Swarm.Weapon
 
         public void Launch(Transform target, int damage, float speed, int maxJumps, float chainRange,
             float freezeChance, float freezeDuration, float penetration, DamageStatType damageType,
-            System.Action<Vector2> onHit = null)
+            System.Action<Vector2> onHit = null, bool isCritical = false)
         {
             _target = target;
             _damage = damage;
@@ -45,6 +46,7 @@ namespace Swarm.Weapon
             _penetration = penetration;
             _damageType = damageType;
             _onHit = onHit;
+            _isCritical = isCritical;
         }
 
         public void SetTravelAnimation(SpriteRenderer spriteRenderer, Sprite[] travelFrames, float travelFrameDuration)
@@ -92,7 +94,7 @@ namespace Swarm.Weapon
 
             if (_target.TryGetComponent<IDamageable>(out var damageable))
             {
-                damageable.TakeDamage(_damage, _damageType, _penetration);
+                damageable.TakeDamage(_damage, _damageType, _penetration, _isCritical);
                 PlayerDamageEvents.RaiseDamageDealt(_target.gameObject);
             }
 

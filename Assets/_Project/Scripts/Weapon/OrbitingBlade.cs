@@ -16,6 +16,7 @@ namespace Swarm.Weapon
         private float _hitCooldown;
         private int _damage;
         private float _penetration;
+        private bool _isCritical;
 
         private readonly Dictionary<Collider2D, float> _lastHitTime = new();
 
@@ -55,11 +56,12 @@ namespace Swarm.Weapon
             _hitRadius = hitRadius;
         }
 
-        public void SetCombatStats(int damage, float hitCooldown, float penetration = 0f)
+        public void SetCombatStats(int damage, float hitCooldown, float penetration = 0f, bool isCritical = false)
         {
             _damage = damage;
             _hitCooldown = hitCooldown;
             _penetration = penetration;
+            _isCritical = isCritical;
         }
 
         private void Update()
@@ -82,7 +84,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration);
+                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration, _isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                     _lastHitTime[hit] = Time.time;
                 }

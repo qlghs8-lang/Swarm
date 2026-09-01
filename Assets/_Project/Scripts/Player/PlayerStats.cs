@@ -19,7 +19,14 @@ namespace Swarm.Player
 
         public float AttackPower { get; private set; }
         public float MoveSpeedBonus { get; private set; }
+        /// <summary>Critical chance, 0-1. Raised by the shop's permanent Luck upgrade and by the
+        /// Luck level-up card; the stat had no consumer at all before this.</summary>
         public float Luck { get; private set; }
+
+        public float CritChance => Mathf.Clamp01(Luck);
+
+        /// <summary>True when the most recent <see cref="RollDamageMultiplier"/> critted.</summary>
+        public bool LastAttackWasCritical { get; private set; }
         public float MagnetRadius { get; private set; }
         public int ProjectileCountBonus { get; private set; }
         public float AreaSizeBonus { get; private set; }
@@ -30,6 +37,8 @@ namespace Swarm.Player
         private float _defenseBonus;
         private float _cooldownReduction;
         private float _magicPenetration;
+
+        [SerializeField] private float critDamageBonus = 1f;
 
         private float _tempMagicPower;
         private float _tempDefenseBonus;
@@ -144,9 +153,27 @@ namespace Swarm.Player
             DamageStatType = type;
         }
 
-        public float GetDamageMultiplier()
+        /// <summary>
+        /// The damage multiplier with no critical roll, for damage that is deliberately excluded
+        /// from crits: damage-over-time ticks (poison gas, fire patch) and the fixed-damage warrior
+        /// procs. Reading this leaves <see cref="LastAttackWasCritical"/> untouched, which also
+        /// matters because the procs fire *inside* another weapon's attack and must not overwrite
+        /// the flag that attack is about to read.
+        /// </summary>
+        public float BaseDamageMultiplier =>
+            1f + (DamageStatType == DamageStatType.AttackPower ? AttackPower : MagicPower);
+
+        /// <summary>
+        /// The damage multiplier for one attack, rolling the critical once. Deliberately per
+        /// attack rather than per target: an area weapon that crits should crit on everything it
+        /// caught, which reads as a single big hit instead of a scatter of mixed numbers.
+        /// </summary>
+        public float RollDamageMultiplier()
         {
-            return 1f + (DamageStatType == DamageStatType.AttackPower ? AttackPower : MagicPower);
+            LastAttackWasCritical = Random.value < CritChance;
+
+            var multiplier = BaseDamageMultiplier;
+            return LastAttackWasCritical ? multiplier * (1f + critDamageBonus) : multiplier;
         }
 
         public float GetPenetration()

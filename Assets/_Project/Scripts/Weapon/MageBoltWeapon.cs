@@ -76,7 +76,8 @@ namespace Swarm.Weapon
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var damageType = _stats != null ? _stats.DamageStatType : DamageStatType.AttackPower;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
@@ -85,7 +86,7 @@ namespace Swarm.Weapon
             {
                 if (target.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(damage, damageType, penetration);
+                    damageable.TakeDamage(damage, damageType, penetration, isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(target.gameObject);
                 }
 

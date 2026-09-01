@@ -63,7 +63,8 @@ namespace Swarm.Weapon
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
 
@@ -74,7 +75,7 @@ namespace Swarm.Weapon
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect, isCritical);
                 }
             }
 

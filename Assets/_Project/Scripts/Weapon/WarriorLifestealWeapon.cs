@@ -45,7 +45,9 @@ namespace Swarm.Weapon
             if (!target.TryGetComponent<IDamageable>(out var damageable)) return;
 
             var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            // Fixed-damage proc: excluded from crits, and rolling here would also clobber the
+            // crit flag of the attack that triggered this proc.
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.BaseDamageMultiplier : 1f);
             var bonusDamage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
 

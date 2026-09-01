@@ -39,7 +39,8 @@ namespace Swarm.Weapon
         {
             _stats = GetComponent<PlayerStats>();
             _impactEffect = SpriteEffectPlayer.Create(
-                this, "MeteorImpactEffect (Temp)", effectMaterial, meteorImpactEffectFrames, meteorImpactEffectFrameDuration);
+                this, "MeteorImpactEffect (Temp)", effectMaterial, meteorImpactEffectFrames, meteorImpactEffectFrameDuration,
+                initialScale: meteorImpactEffectScale);
         }
 
         private void OnDisable()
@@ -73,9 +74,13 @@ namespace Swarm.Weapon
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var impactDamage = Mathf.RoundToInt(data.Damage * damageMultiplier);
-            var burnTick = Mathf.RoundToInt(burnDamagePerTick * damageMultiplier);
+            // The impact can crit; the fire patch it leaves is damage over time, which cannot,
+            // so the burn tick is sized off the un-critted multiplier.
+            var burnMultiplier = DamageMultiplier * (_stats != null ? _stats.BaseDamageMultiplier : 1f);
+            var burnTick = Mathf.RoundToInt(burnDamagePerTick * burnMultiplier);
             var damageType = _stats != null ? _stats.DamageStatType : DamageStatType.AttackPower;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
             var impactRadius = data.Radius * areaMultiplier;
@@ -83,14 +88,14 @@ namespace Swarm.Weapon
 
             foreach (var target in targets)
             {
-                SpawnMeteor(EnemyTargeting.GetHitPoint(target), impactRadius, impactDamage, damageType, penetration, patchRadius, burnTick);
+                SpawnMeteor(EnemyTargeting.GetHitPoint(target), impactRadius, impactDamage, damageType, penetration, patchRadius, burnTick, isCritical);
             }
 
             return true;
         }
 
         private void SpawnMeteor(Vector2 targetPosition, float impactRadius, int impactDamage, DamageStatType damageType,
-            float penetration, float patchRadius, int burnTick)
+            float penetration, float patchRadius, int burnTick, bool isCritical)
         {
             var meteorObject = new GameObject("Meteor (Temp)");
             meteorObject.transform.localScale = Vector3.one * meteorVisualScale;
@@ -105,7 +110,7 @@ namespace Swarm.Weapon
                 {
                     PlayImpactEffect(impactPosition);
                     SpawnFirePatch(impactPosition, patchRadius, burnTick, damageType, penetration);
-                });
+                }, isCritical);
 
             if (meteorTravelFrames != null && meteorTravelFrames.Length > 0)
             {
@@ -121,7 +126,7 @@ namespace Swarm.Weapon
 
         private void PlayImpactEffect(Vector2 position)
         {
-            _impactEffect?.Play(position);
+            _impactEffect?.Play(position, 0f, meteorImpactEffectScale);
         }
 
         private void SpawnFirePatch(Vector2 position, float radius, int burnTick, DamageStatType damageType, float penetration)

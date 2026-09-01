@@ -169,7 +169,8 @@ namespace Swarm.Enemy
             ResetHealth();
         }
 
-        public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower, float penetration = 0f)
+        public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower,
+                               float penetration = 0f, bool isCritical = false)
         {
             if (_isDead) return;
 
@@ -177,7 +178,7 @@ namespace Swarm.Enemy
             var defense = baseDefense - _temporaryDefensePenalty - penetration;
             var reducedAmount = Mathf.RoundToInt(amount * (1f - Mathf.Clamp(defense, 0f, 0.9f)));
             _currentHealth = Mathf.Max(_currentHealth - reducedAmount, 0);
-            SpawnDamageNumber(reducedAmount);
+            SpawnDamageNumber(reducedAmount, isCritical);
             OnHealthChanged?.Invoke(_currentHealth, _currentMaxHealth);
 
             if (_currentHealth <= 0)
@@ -186,7 +187,7 @@ namespace Swarm.Enemy
             }
         }
 
-        private void SpawnDamageNumber(int amount)
+        private void SpawnDamageNumber(int amount, bool isCritical)
         {
             if (damageNumberPrefab == null) return;
 
@@ -195,7 +196,7 @@ namespace Swarm.Enemy
             if (instance.TryGetComponent<DamageNumber>(out var damageNumber))
             {
                 damageNumber.SetSourcePrefab(damageNumberPrefab);
-                damageNumber.Setup(amount);
+                damageNumber.Setup(amount, isCritical);
             }
         }
 

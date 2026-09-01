@@ -60,15 +60,16 @@ namespace Swarm.Weapon
             if (target == null) return false;
 
             var count = Mathf.Max(1, data.ProjectileCount + (_stats != null ? _stats.ProjectileCountBonus : 0));
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
 
-            StartCoroutine(FireBurst(target, count, damage, penetration));
+            StartCoroutine(FireBurst(target, count, damage, penetration, isCritical));
             return true;
         }
 
-        private IEnumerator FireBurst(Transform target, int count, int damage, float penetration)
+        private IEnumerator FireBurst(Transform target, int count, int damage, float penetration, bool isCritical)
         {
             for (var i = 0; i < count; i++)
             {
@@ -79,7 +80,7 @@ namespace Swarm.Weapon
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect, isCritical);
                 }
 
                 if (i < count - 1) yield return new WaitForSeconds(burstInterval);

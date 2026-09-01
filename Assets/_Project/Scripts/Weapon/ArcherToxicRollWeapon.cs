@@ -106,7 +106,8 @@ namespace Swarm.Weapon
         private void SpawnGasCloud(Vector2 position)
         {
             var levelBonus = Mathf.Max(0, Level - 1) * debuffPerLevel;
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            // Gas ticks are damage over time, which is excluded from crits.
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.BaseDamageMultiplier : 1f);
             var damage = Mathf.RoundToInt(damagePerTick * damageMultiplier);
             var radius = gasCloudRadius * (1f + (_stats != null ? _stats.AreaSizeBonus : 0f));
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;

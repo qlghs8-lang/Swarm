@@ -61,6 +61,7 @@ namespace Swarm.Player
                     stats.IncreaseAreaSize(amount);
                     break;
                 case StatType.Luck:
+                    // Luck is critical chance — see PlayerStats.RollDamageMultiplier.
                     stats.IncreaseLuck(amount);
                     break;
                 default:

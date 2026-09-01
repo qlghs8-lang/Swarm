@@ -57,7 +57,8 @@ namespace Swarm.Weapon
 
             var orbitRadius = data.OrbitRadius * areaMultiplier;
             var hitRadius = data.HitRadius * areaMultiplier;
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
             var hitCooldown = Mathf.Max(0.1f, data.AttackInterval * cooldownMultiplier);
@@ -67,7 +68,7 @@ namespace Swarm.Weapon
                 var angle = _sharedAngleDegrees + 360f / _blades.Count * i;
                 _blades[i].Configure(transform, orbitRadius, angle, hitRadius);
                 _blades[i].transform.localScale = Vector3.one * (hitRadius / BladeSpriteHalfLengthUnits);
-                _blades[i].SetCombatStats(damage, hitCooldown, penetration);
+                _blades[i].SetCombatStats(damage, hitCooldown, penetration, isCritical);
             }
         }
 

@@ -16,6 +16,7 @@ namespace Swarm.Weapon
         private float _impactRadius;
         private int _impactDamage;
         private DamageStatType _damageType;
+        private bool _isCritical;
         private float _penetration;
         private System.Action<Vector2> _onImpact;
 
@@ -25,7 +26,8 @@ namespace Swarm.Weapon
         private float _animTimer;
 
         public void Launch(Vector2 targetPosition, float fallOffset, float speed, float impactRadius,
-            int impactDamage, DamageStatType damageType, float penetration, System.Action<Vector2> onImpact)
+            int impactDamage, DamageStatType damageType, float penetration, System.Action<Vector2> onImpact,
+            bool isCritical = false)
         {
             _targetPosition = targetPosition;
             _speed = speed;
@@ -34,6 +36,7 @@ namespace Swarm.Weapon
             _damageType = damageType;
             _penetration = penetration;
             _onImpact = onImpact;
+            _isCritical = isCritical;
 
             var offsetDirection = new Vector2(-1f, 1f).normalized;
             transform.position = targetPosition + offsetDirection * fallOffset;
@@ -79,7 +82,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(_impactDamage, _damageType, _penetration);
+                    damageable.TakeDamage(_impactDamage, _damageType, _penetration, _isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }

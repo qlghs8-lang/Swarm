@@ -97,7 +97,8 @@ namespace Swarm.Weapon
             if (target == null) return false;
 
             var facing = (EnemyTargeting.GetHitPoint(target) - origin).normalized;
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
             var forwardDotThreshold = Mathf.Cos(forwardAngleDegrees * 0.5f * Mathf.Deg2Rad);
 
@@ -112,7 +113,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration);
+                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration, isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }

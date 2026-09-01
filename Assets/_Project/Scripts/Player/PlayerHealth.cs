@@ -54,7 +54,8 @@ namespace Swarm.Player
             OnHealthChanged?.Invoke(_currentHealth, maxHealth);
         }
 
-        public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower, float penetration = 0f)
+        public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower,
+                               float penetration = 0f, bool isCritical = false)
         {
             if (IsDead || _invincibleTimer > 0f) return;
 

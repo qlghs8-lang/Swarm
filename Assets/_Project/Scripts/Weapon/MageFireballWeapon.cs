@@ -27,7 +27,8 @@ namespace Swarm.Weapon
         {
             _stats = GetComponent<PlayerStats>();
             _hitEffect = SpriteEffectPlayer.Create(
-                this, "FireballHitEffect (Temp)", effectMaterial, hitEffectFrames, hitEffectFrameDuration);
+                this, "FireballHitEffect (Temp)", effectMaterial, hitEffectFrames, hitEffectFrameDuration,
+                initialScale: hitEffectScale);
         }
 
         private void OnDisable()
@@ -88,7 +89,8 @@ namespace Swarm.Weapon
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var damageType = _stats != null ? _stats.DamageStatType : DamageStatType.AttackPower;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
@@ -101,7 +103,7 @@ namespace Swarm.Weapon
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, PierceCount, damageType, penetration, PlayHitEffect);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, PierceCount, damageType, penetration, PlayHitEffect, isCritical);
                 }
             }
 
@@ -110,7 +112,7 @@ namespace Swarm.Weapon
 
         private void PlayHitEffect(Vector2 position)
         {
-            _hitEffect?.Play(position);
+            _hitEffect?.Play(position, 0f, hitEffectScale);
         }
     }
 }

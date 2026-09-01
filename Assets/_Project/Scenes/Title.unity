@@ -1839,6 +1839,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: aecdf4d9d76e4653b256f6d1bc48e457, type: 2}
   - {fileID: 11400000, guid: ad8b92905d8c45b7a785b5e7729402df, type: 2}
   - {fileID: 11400000, guid: 37545decb9754c53bf7f57dadbaca92a, type: 2}
+  - {fileID: 11400000, guid: e5a8d42d7f1b4c93a6e07b3c9d182f64, type: 2}
   slotContainer: {fileID: 620001}
   slotPrefab: {fileID: 100000005, guid: 696351af41484821b32900542b725e2d, type: 3}
 --- !u!1 &450000

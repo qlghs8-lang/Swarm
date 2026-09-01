@@ -32,6 +32,7 @@ namespace Swarm.Weapon
         private int _damage;
         private float _hitCooldown;
         private float _penetration;
+        private bool _isCritical;
         private List<ChasingBlade> _siblings;
 
         private State _state = State.Orbiting;
@@ -85,11 +86,12 @@ namespace Swarm.Weapon
             _siblings = siblings;
         }
 
-        public void SetCombatStats(int damage, float hitCooldown, float penetration = 0f)
+        public void SetCombatStats(int damage, float hitCooldown, float penetration = 0f, bool isCritical = false)
         {
             _damage = damage;
             _hitCooldown = hitCooldown;
             _penetration = penetration;
+            _isCritical = isCritical;
         }
 
         private Vector2 OrbitPosition
@@ -178,7 +180,7 @@ namespace Swarm.Weapon
             {
                 if (_chaseTarget.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration);
+                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration, _isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(_chaseTarget.gameObject);
                 }
 
@@ -288,7 +290,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration);
+                    damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration, _isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                     _lastHitTime[hit] = Time.time;
                 }

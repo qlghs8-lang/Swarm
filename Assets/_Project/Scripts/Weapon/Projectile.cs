@@ -17,6 +17,7 @@ namespace Swarm.Weapon
         private DamageStatType _damageType;
         private float _penetration;
         private System.Action<Vector2> _onHit;
+        private bool _isCritical;
 
         // A pooled projectile is activated before Launch() runs, and some callers activate one
         // without ever launching it (the fireball shader warm-up pulls an instance from the pool
@@ -38,7 +39,7 @@ namespace Swarm.Weapon
             }
         }
 
-        public void Launch(Vector2 direction, float speed, float maxRange, int damage, ObjectPool pool, int pierceCount = 0, DamageStatType damageType = DamageStatType.AttackPower, float penetration = 0f, System.Action<Vector2> onHit = null)
+        public void Launch(Vector2 direction, float speed, float maxRange, int damage, ObjectPool pool, int pierceCount = 0, DamageStatType damageType = DamageStatType.AttackPower, float penetration = 0f, System.Action<Vector2> onHit = null, bool isCritical = false)
         {
             _direction = direction;
             _speed = speed;
@@ -50,6 +51,7 @@ namespace Swarm.Weapon
             _damageType = damageType;
             _penetration = penetration;
             _onHit = onHit;
+            _isCritical = isCritical;
             _hitColliders.Clear();
             _isLaunched = true;
 
@@ -83,7 +85,7 @@ namespace Swarm.Weapon
 
             if (other.TryGetComponent<IDamageable>(out var damageable))
             {
-                damageable.TakeDamage(_damage, _damageType, _penetration);
+                damageable.TakeDamage(_damage, _damageType, _penetration, _isCritical);
                 PlayerDamageEvents.RaiseDamageDealt(other.gameObject);
             }
 

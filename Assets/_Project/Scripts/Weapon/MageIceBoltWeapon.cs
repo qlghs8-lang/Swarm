@@ -65,7 +65,8 @@ namespace Swarm.Weapon
             var targets = _targetBuffer;
             if (targets.Count == 0) return false;
 
-            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.GetDamageMultiplier() : 1f);
+            var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
+            var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var damage = Mathf.RoundToInt(data.Damage * damageMultiplier);
             var damageType = _stats != null ? _stats.DamageStatType : DamageStatType.AttackPower;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
@@ -73,13 +74,13 @@ namespace Swarm.Weapon
 
             for (var i = 0; i < targets.Count; i++)
             {
-                SpawnBolt(origin, targets[i], damage, damageType, penetration, maxJumps);
+                SpawnBolt(origin, targets[i], damage, damageType, penetration, maxJumps, isCritical);
             }
 
             return true;
         }
 
-        private void SpawnBolt(Vector2 origin, Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps)
+        private void SpawnBolt(Vector2 origin, Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps, bool isCritical)
         {
             var boltObject = new GameObject("IceBolt (Temp)");
             boltObject.transform.position = origin;
@@ -89,7 +90,7 @@ namespace Swarm.Weapon
             spriteRenderer.sortingOrder = 1;
 
             var bolt = boltObject.AddComponent<ChainLightningBolt>();
-            bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, freezeChance, freezeDuration, penetration, damageType, PlayHitEffect);
+            bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, freezeChance, freezeDuration, penetration, damageType, PlayHitEffect, isCritical);
 
             if (travelFrames != null && travelFrames.Length > 0)
             {
