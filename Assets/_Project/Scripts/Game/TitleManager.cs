@@ -15,7 +15,7 @@ namespace Swarm.Game
         [SerializeField] private string gameSceneName = "Game";
         [SerializeField] private string testStageSceneName = "TestStage";
 
-        private const float SlotHeight = 100f;
+        private SlotListView _list;
 
         private void OnEnable()
         {
@@ -73,45 +73,46 @@ namespace Swarm.Game
         {
             UpdateGoldText();
 
-            for (int i = slotContainer.childCount - 1; i >= 0; i--)
-            {
-                Destroy(slotContainer.GetChild(i).gameObject);
-            }
+            _list ??= SlotListView.Attach(slotContainer, slotPrefab);
 
             string selectedId = PlayerPrefs.GetString(SelectedCharacterKey, "");
-            float startY = (characters.Length - 1) * SlotHeight * 0.5f;
 
-            for (int i = 0; i < characters.Length; i++)
+            _list.Rebuild(characters.Length, (i, slot) =>
             {
                 CharacterDefinition character = characters[i];
-                ShopSlot slot = Instantiate(slotPrefab, slotContainer);
-                slot.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * SlotHeight);
+                if (character == null) return;
 
-                bool isSelected = character.Id == selectedId;
-                string label = $"{character.DisplayName}" + (character.IsUnlocked ? "" : $"\n해금 비용: {character.UnlockCost} G");
+                // Characters unlock in one purchase, so there is no level track to show.
+                slot.HideProgress();
 
                 if (!character.IsUnlocked)
                 {
-                    slot.Setup(label, "해금", true, () =>
+                    var affordable = GoldWallet.Current >= character.UnlockCost;
+                    slot.Setup($"{character.DisplayName}\n해금 비용: {character.UnlockCost} G", "해금", affordable, () =>
                     {
                         character.TryUnlock();
                         RefreshUI();
                     });
+                    slot.SetAffordable(affordable);
+                    return;
                 }
-                else if (isSelected)
+
+                slot.SetAffordable(true);
+
+                if (character.Id == selectedId)
                 {
-                    slot.Setup(label, "선택됨", false, null);
+                    slot.Setup(character.DisplayName, "선택됨", false, null);
                 }
                 else
                 {
-                    slot.Setup(label, "선택", true, () =>
+                    slot.Setup(character.DisplayName, "선택", true, () =>
                     {
                         PlayerPrefs.SetString(SelectedCharacterKey, character.Id);
                         PlayerPrefs.Save();
                         RefreshUI();
                     });
                 }
-            }
+            });
         }
     }
 }

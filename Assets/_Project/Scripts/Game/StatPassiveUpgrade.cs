@@ -24,5 +24,11 @@ namespace Swarm.Game
 
             StatApplier.Apply(player, stat, amountPerLevel * Level);
         }
+
+        public override string DescribeTotal(int level)
+        {
+            var total = amountPerLevel * level;
+            return stat.IsPercentage() ? $"+{total * 100f:0.#}%" : $"+{total:0.#}";
+        }
     }
 }

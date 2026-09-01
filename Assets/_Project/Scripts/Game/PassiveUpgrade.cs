@@ -29,5 +29,11 @@ namespace Swarm.Game
         }
 
         public abstract void ApplyToPlayer(GameObject player);
+
+        /// <summary>
+        /// The cumulative effect at a given level, formatted for the shop row — the price alone
+        /// never said what the gold actually bought.
+        /// </summary>
+        public abstract string DescribeTotal(int level);
     }
 }
