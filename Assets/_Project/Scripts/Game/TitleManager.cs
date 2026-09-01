@@ -102,6 +102,7 @@ namespace Swarm.Game
                 if (character.Id == selectedId)
                 {
                     slot.Setup(character.DisplayName, "선택됨", false, null);
+                    slot.SetSelected(true);
                 }
                 else
                 {

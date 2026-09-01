@@ -18,6 +18,12 @@ namespace Swarm.Game
         [SerializeField] private Vector2 pipRowOffset = new(16f, 6f);
         [SerializeField] private float pipSpacing = 3f;
 
+        [Header("Selection")]
+        // The title screen's character list reuses this slot. "Selected" used to be readable only
+        // from the button label reading 선택됨, which is easy to miss when scanning the list.
+        [SerializeField] private Sprite normalFrame;
+        [SerializeField] private Sprite selectedFrame;
+
         [Header("Affordability")]
         [SerializeField] private Color affordableTextColor = Color.white;
         [SerializeField] private Color unaffordableTextColor = new(1f, 0.55f, 0.5f, 1f);
@@ -26,6 +32,12 @@ namespace Swarm.Game
         // levels an upgrade has — it went from 5 to 10 without anyone touching the prefab.
         private RectTransform _pipRow;
         private readonly List<Image> _pips = new();
+        private Image _background;
+
+        private void Awake()
+        {
+            _background = GetComponent<Image>();
+        }
 
         public void Setup(string label, string buttonLabel, bool interactable, Action onClick)
         {
@@ -36,6 +48,19 @@ namespace Swarm.Game
 
             actionButton.onClick.RemoveAllListeners();
             actionButton.onClick.AddListener(() => onClick?.Invoke());
+
+            // SlotListView reuses slots across rebuilds, so a slot that was selected last time
+            // would keep its highlight on a list where nothing is selected.
+            SetSelected(false);
+        }
+
+        /// <summary>Swaps the slot frame for the highlighted one. No-op unless both sprites are
+        /// assigned, so the shop list (which has no selection) is unaffected either way.</summary>
+        public void SetSelected(bool selected)
+        {
+            if (_background == null || normalFrame == null || selectedFrame == null) return;
+
+            _background.sprite = selected ? selectedFrame : normalFrame;
         }
 
         /// <summary>Marks the row as priced beyond the player's gold — the button used to stay lit
