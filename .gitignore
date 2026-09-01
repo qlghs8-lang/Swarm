@@ -108,3 +108,7 @@ InitTestScene*.unity*
 
 # Rider / Visual Studio solution filter files
 *.slnx
+
+# Unity regenerates this default asset on its own; unused, not referenced by any script/scene
+/Assets/InputSystem_Actions.inputactions
+/Assets/InputSystem_Actions.inputactions.meta
