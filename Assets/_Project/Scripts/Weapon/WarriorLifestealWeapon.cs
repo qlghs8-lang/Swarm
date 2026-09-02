@@ -10,6 +10,11 @@ namespace Swarm.Weapon
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float procChance = 0.1f;
         [SerializeField] private int healAmount = 3;
+        // Heal is gated by its own cooldown so sustain stays bounded. Damage procs scale with
+        // enemy density by design; healing must not, or a saturated field plus extra orbiting
+        // blades makes the player unkillable while standing still.
+        [SerializeField] private float healCooldown = 0.4f;
+        [SerializeField] private float minHealCooldown = 0.25f;
         [SerializeField] private Sprite[] smashEffectFrames;
         [SerializeField] private float smashFrameDuration = 0.07f;
         [SerializeField] private Material effectMaterial;
@@ -17,6 +22,7 @@ namespace Swarm.Weapon
         private PlayerStats _stats;
         private PlayerHealth _health;
         private SpriteEffectPlayer _smashEffect;
+        private float _nextHealTime;
 
         private void Awake()
         {
@@ -53,8 +59,9 @@ namespace Swarm.Weapon
 
             damageable.TakeDamage(bonusDamage, DamageStatType.AttackPower, penetration);
 
-            if (_health != null)
+            if (_health != null && Time.time >= _nextHealTime)
             {
+                _nextHealTime = Time.time + Mathf.Max(minHealCooldown, healCooldown * CooldownMultiplier);
                 _health.Heal(healAmount);
             }
 

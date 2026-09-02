@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Swarm.Enemy;
 using Swarm.Player;
 using UnityEngine;
 
@@ -73,6 +74,9 @@ namespace Swarm.Weapon
             var radians = _angleDegrees * Mathf.Deg2Rad;
             transform.position = (Vector2)_pivot.position + _orbitRadius * new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
 
+            // The way the blade is sweeping: perpendicular to the arm, towards increasing angle.
+            var tangent = new Vector2(-Mathf.Sin(radians), Mathf.Cos(radians));
+
             EnemyTargeting.OverlapEnemies(transform.position, _hitRadius, _hitBuffer);
             var hits = _hitBuffer;
             foreach (var hit in hits)
@@ -87,6 +91,20 @@ namespace Swarm.Weapon
                     damageable.TakeDamage(_damage, DamageStatType.AttackPower, _penetration, _isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                     _lastHitTime[hit] = Time.time;
+
+                    // EnemyHealth knocks anything it damages straight away from the player, which
+                    // for an orbiting blade is straight out of the ring. The knockback (0.66 units)
+                    // is most of the blade's hit band (1.0 wide), so one hit resets an approach --
+                    // and past four blades the ring re-hits before an enemy can cross, walling the
+                    // player in while they stand still. Sweeping them along the ring instead leaves
+                    // their approach intact, and reads as being swatted aside by the blade rather
+                    // than repelled by a force field. ApplyKnockback assigns linearVelocity
+                    // outright, so this replaces the radial knockback applied a moment ago; the
+                    // active check skips an enemy the hit killed and returned to the pool.
+                    if (hit.gameObject.activeInHierarchy && hit.TryGetComponent<EnemyChaser>(out var chaser))
+                    {
+                        chaser.ApplyKnockback(tangent);
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ namespace Swarm.Player
     public class PlayerHealth : MonoBehaviour, IDamageable
     {
         [SerializeField] private int maxHealth = 100;
-        [SerializeField] private float invincibleDuration = 0.5f;
+        [SerializeField] private float invincibleDuration = 0.4f;
 
         private int _currentHealth;
         private float _invincibleTimer;

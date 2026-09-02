@@ -451,7 +451,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Player.PlayerHealth
   maxHealth: 100
-  invincibleDuration: 0.5
+  invincibleDuration: 0.4
 --- !u!114 &227348263
 MonoBehaviour:
   m_ObjectHideFlags: 0
