@@ -27,7 +27,12 @@ namespace Swarm.Player
 
         /// <summary>True when the most recent <see cref="RollDamageMultiplier"/> critted.</summary>
         public bool LastAttackWasCritical { get; private set; }
-        public float MagnetRadius { get; private set; }
+        /// <summary>Pickup reach in world units. The base is not cosmetic: the hit collider sits
+        /// at chest height (offset y 0.7, r 0.25) while an orb lies on the ground (r 0.3), so the
+        /// two circles are 0.7 apart and 0.55 wide combined — standing directly on an orb did not
+        /// touch it. With the base at zero the magnet was switched off entirely, which left the
+        /// player unable to collect reliably at all until they bought the shop upgrade.</summary>
+        public float MagnetRadius => baseMagnetRadius + _magnetRadiusBonus;
         public int ProjectileCountBonus { get; private set; }
         public float AreaSizeBonus { get; private set; }
         public float ArmorPenetration { get; private set; }
@@ -39,6 +44,12 @@ namespace Swarm.Player
         private float _magicPenetration;
 
         [SerializeField] private float critDamageBonus = 1f;
+
+        // Deliberately just past the 0.7 collider gap and no further, so it only buys a working
+        // pickup — the shop's magnet upgrade (+1.0 per level, 10 levels) keeps all of its value.
+        [SerializeField] private float baseMagnetRadius = 1f;
+
+        private float _magnetRadiusBonus;
 
         private float _tempMagicPower;
         private float _tempDefenseBonus;
@@ -125,7 +136,7 @@ namespace Swarm.Player
 
         public void IncreaseMagnetRadius(float amount)
         {
-            MagnetRadius += amount;
+            _magnetRadiusBonus += amount;
         }
 
         public void IncreaseProjectileCount(int amount)

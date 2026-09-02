@@ -175,7 +175,7 @@ MonoBehaviour:
   mediumSprite: {fileID: 21300000, guid: 60ca7797081b19af09a45c2bd64d93ac, type: 3}
   largeSprite: {fileID: 21300000, guid: 7f7c46bca3bdb90d0660f5fa7a71d747, type: 3}
   mediumThreshold: 10
-  largeThreshold: 30
+  largeThreshold: 28
 --- !u!114 &4000000000000000007
 MonoBehaviour:
   m_ObjectHideFlags: 0

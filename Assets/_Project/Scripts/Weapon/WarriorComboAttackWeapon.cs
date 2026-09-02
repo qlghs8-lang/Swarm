@@ -124,7 +124,7 @@ namespace Swarm.Weapon
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
             var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
-            var forwardDotThreshold = Mathf.Cos(data.AttackAngleDegrees * 0.5f * Mathf.Deg2Rad);
+            var halfAngleDegrees = data.AttackAngleDegrees * 0.5f;
 
             EnemyTargeting.OverlapEnemies(hitCenter, radius, _hitBuffer);
             var hits = _hitBuffer;
@@ -132,8 +132,7 @@ namespace Swarm.Weapon
             {
                 if (!hit.CompareTag("Enemy")) continue;
 
-                var toEnemy = ((Vector2)hit.transform.position - hitCenter).normalized;
-                if (Vector2.Dot(facing, toEnemy) < forwardDotThreshold) continue;
+                if (!IsInsideCone(hit, hitCenter, facing, halfAngleDegrees)) continue;
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
@@ -144,6 +143,29 @@ namespace Swarm.Weapon
 
             PlayStepEffect(_stepIndex, hitCenter, facing, radius);
             return true;
+        }
+
+        // The cone test used to compare against hit.transform.position, but enemy transforms sit at
+        // the feet while their colliders are offset up to body height (+0.75 on every enemy prefab).
+        // Facing is measured between collider centres, so that mismatch tilted each enemy's measured
+        // direction downward by atan(0.75 / distance): zero when attacking straight up or down, and
+        // up to ~57 degrees when attacking sideways at point-blank range. Enemies pressed against the
+        // player dropped out of the cone entirely, and the 40-degree thrust step could never hit a
+        // horizontally aligned target inside its 1.5 radius.
+        private static bool IsInsideCone(Collider2D hit, Vector2 center, Vector2 facing, float halfAngleDegrees)
+        {
+            var bounds = hit.bounds;
+            var toEnemy = (Vector2)bounds.center - center;
+            var distance = toEnemy.magnitude;
+            var enemyRadius = Mathf.Max(bounds.extents.x, bounds.extents.y);
+
+            // Touching or overlapping the swing origin: there is no meaningful direction left to test.
+            if (distance <= enemyRadius || distance <= Mathf.Epsilon) return true;
+
+            // Widen the cone by the enemy's angular size so a body clipping the edge still counts,
+            // instead of testing a single point against a hard edge.
+            var toleranceDegrees = Mathf.Asin(Mathf.Clamp01(enemyRadius / distance)) * Mathf.Rad2Deg;
+            return Vector2.Angle(facing, toEnemy) <= halfAngleDegrees + toleranceDegrees;
         }
 
         private void PlayStepEffect(int stepIndex, Vector2 hitCenter, Vector2 facing, float radius)

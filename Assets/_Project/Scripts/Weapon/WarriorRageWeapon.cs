@@ -10,7 +10,7 @@ namespace Swarm.Weapon
 
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float procChance = 0.1f;
-        [SerializeField] private int healAmount = 15;
+        [SerializeField] private int healAmount = 3;
         [SerializeField] private float stackChance = 0.1f;
         [FormerlySerializedAs("attackPowerPerKill")] [SerializeField] private float attackPowerPerStack = 0.1f;
         [FormerlySerializedAs("maxHealthPerKill")] [SerializeField] private int maxHealthPerStack = 2;

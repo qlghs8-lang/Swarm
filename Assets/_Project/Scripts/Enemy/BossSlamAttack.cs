@@ -43,10 +43,15 @@ namespace Swarm.Enemy
 
         private const int CircleSegments = 24;
 
-        [SerializeField] private float interval = 4f;
-        [SerializeField] private float radius = 3f;
+        // The boss's own body collider has a radius of ~3.45, so a 3-unit slam never reached past
+        // its own sprite: anything the collider pushed out of the way was already out of range and
+        // the attack could not land on a player who was simply standing next to the boss. The reach
+        // now extends well beyond the body, and the telegraph is long enough that running outward
+        // the moment the circle appears still clears it — a dodge, not a coin flip.
+        [SerializeField] private float interval = 3.5f;
+        [SerializeField] private float radius = 8f;
         [SerializeField] private int damage = 25;
-        [SerializeField] private float telegraphDuration = 0.6f;
+        [SerializeField] private float telegraphDuration = 1f;
         [SerializeField] private Color telegraphColor = new(1f, 0.2f, 0.2f, 0.35f);
 
         private float _timer;

@@ -63,6 +63,15 @@ namespace Swarm.Spawner
         [SerializeField] private float bossSpawnTime = 600f;
         [SerializeField] private WaveDefinition[] waves;
 
+        [Header("Experience")]
+        // Stepped rather than continuous. A drop worth a fraction more every second reads as
+        // noise; a jump every couple of minutes reads as progress, and the orb changes tier at
+        // the same moment so the step is visible on the ground rather than only in the bar.
+        [SerializeField] private float experienceMultiplierStart = 1.5f;
+        [SerializeField] private float experienceMultiplierEnd = 2.6f;
+        [SerializeField] private int experienceStageCount = 5;
+        [SerializeField] private float experienceRampDuration = 600f;
+
         public event System.Action<EnemyHealth> OnBossSpawned;
         public event System.Action<string> OnWaveTriggered;
 
@@ -266,11 +275,26 @@ namespace Swarm.Spawner
                 var defenseBonus = Mathf.Lerp(0f, defenseBonusEnd, difficultyT);
                 var magicDefenseBonus = Mathf.Lerp(0f, magicDefenseBonusEnd, difficultyT);
                 health.ApplyDifficulty(healthMultiplier, defenseBonus, magicDefenseBonus);
+                health.SetExperienceMultiplier(GetExperienceMultiplier());
 
                 health.ResetHealth();
             }
 
             _active.Add(instance);
+        }
+
+        /// <summary>The drop multiplier for the stage the run is currently in. Applied at spawn,
+        /// so an enemy recycled by <see cref="SweepActiveEnemies"/> keeps the value it was born
+        /// with — deliberately the conservative direction, since a stale value is only ever lower
+        /// than the current one.</summary>
+        private float GetExperienceMultiplier()
+        {
+            if (experienceStageCount <= 1) return experienceMultiplierStart;
+
+            var stageDuration = experienceRampDuration / experienceStageCount;
+            var stage = Mathf.Clamp(Mathf.FloorToInt(_elapsedTime / stageDuration), 0, experienceStageCount - 1);
+            return Mathf.Lerp(experienceMultiplierStart, experienceMultiplierEnd,
+                              stage / (float)(experienceStageCount - 1));
         }
 
         private GameObject PickWeightedPrefab()

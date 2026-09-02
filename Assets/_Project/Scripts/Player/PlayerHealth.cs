@@ -24,6 +24,14 @@ namespace Swarm.Player
         {
             _currentHealth = maxHealth;
             _stats = GetComponent<PlayerStats>();
+
+            // Contact damage now comes through PlayerHurtbox's small trigger rather than the
+            // oversized body collider. Added here when it is missing so an existing scene keeps
+            // taking damage; add it in the inspector instead to tune the radius per scene.
+            if (!TryGetComponent<PlayerHurtbox>(out _))
+            {
+                gameObject.AddComponent<PlayerHurtbox>();
+            }
         }
 
         private void Update()

@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 9000000000000000007}
   - component: {fileID: 9000000000000000008}
   - component: {fileID: 9000000000000000009}
+  - component: {fileID: 6613452153873267284}
+  - component: {fileID: 9000000000000000010}
   m_Layer: 7
   m_Name: Enemy_Boss
   m_TagString: Enemy
@@ -33,7 +35,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2.4, y: 2.4, z: 1}
+  m_LocalScale: {x: 0.3483146, y: 0.3483146, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -87,8 +89,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 137350209972927885, guid: dfca7229350f7154eaaa44e93439136c, type: 3}
-  m_Color: {r: 0.4, g: 0.03, b: 0.08, a: 1}
+  m_Sprite: {fileID: -2073869341541158409, guid: 3f334f40f0f74b1193581338be91f317, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -158,8 +160,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Offset: {x: 0, y: 3.4451613}
+  m_Radius: 3.4451613
 --- !u!114 &9000000000000000006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,9 +172,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f98096d00def07479cc9a67cc1ea8a1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyChaser
   moveSpeed: 2.5
+  acceleration: 25
+  crowdPushForce: 14
+  knockbackDuration: 0.11
+  knockbackSpeed: 6
+  lateralPushBias: 2.5
+  speedVariance: 0.14
+  accelerationVariance: 0.3
+  aimJitterDegrees: 7
+  massVariance: 0.2
 --- !u!114 &9000000000000000007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +194,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 53e47aa94b90ce845a47f34bd6812ad0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyContactDamage
   damage: 25
 --- !u!114 &9000000000000000008
@@ -196,17 +207,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4ecf3950ce5e460a9093ca91b25abc2a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyHealth
-  maxHealth: 12000
+  maxHealth: 16000
   experiencePickupPrefab: {fileID: 4000000000000000001, guid: 37852e5ce3b9499498fed1e30736c6b9, type: 3}
   experienceReward: 150
   goldPickupPrefab: {fileID: 5000000000000000001, guid: d25c0962ce974e8cb4c8a294a85188a4, type: 3}
   goldDropChance: 1
   dropScatterRadius: 1.5
   damageNumberPrefab: {fileID: 6000000000000000001, guid: 939040dee52047db8e60f4f991352ab5, type: 3}
-  baseDefense: 0.35
-  baseMagicDefense: 0.35
+  baseDefense: 0.7
+  baseMagicDefense: 0.7
   goldReward: 100
 --- !u!114 &9000000000000000009
 MonoBehaviour:
@@ -218,10 +229,46 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 905c734aaa4b6b84686426afea988abc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.BossSlamAttack
-  interval: 4
-  radius: 3
+  interval: 3.5
+  radius: 8
   damage: 25
-  telegraphDuration: 0.6
+  telegraphDuration: 1
   telegraphColor: {r: 1, g: 0.2, b: 0.2, a: 0.35}
+--- !u!95 &6613452153873267284
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9000000000000000001}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 59d8f467e369cde4b80a4cc898a935e4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &9000000000000000010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9000000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 717cf10723a646cbbbd48b03324758c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyStatusImmunity
+  immuneToKnockback: 1
+  immuneToFreeze: 1

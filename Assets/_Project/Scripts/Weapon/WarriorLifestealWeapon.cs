@@ -9,7 +9,7 @@ namespace Swarm.Weapon
 
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float procChance = 0.1f;
-        [SerializeField] private int healAmount = 15;
+        [SerializeField] private int healAmount = 3;
         [SerializeField] private Sprite[] smashEffectFrames;
         [SerializeField] private float smashFrameDuration = 0.07f;
         [SerializeField] private Material effectMaterial;

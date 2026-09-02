@@ -27,6 +27,11 @@ namespace Swarm.Enemy
         // was granting before.
         [SerializeField] private int goldReward;
 
+        // Handed in by the spawner at spawn time, alongside the difficulty ramp. Enemies killed
+        // later in a run drop more, which is what lets the level requirement stay linear: the
+        // income curve is shaped here rather than by bending the requirement formula.
+        private float _experienceMultiplier = 1f;
+
         private int _currentHealth;
         private int _currentMaxHealth;
         private float _defenseBonus;
@@ -68,6 +73,11 @@ namespace Swarm.Enemy
         public void SetPool(ObjectPool pool)
         {
             _pool = pool;
+        }
+
+        public void SetExperienceMultiplier(float multiplier)
+        {
+            _experienceMultiplier = multiplier;
         }
 
         public void ApplyDifficulty(float healthMultiplier, float defenseBonus, float magicDefenseBonus)
@@ -135,7 +145,8 @@ namespace Swarm.Enemy
                 if (_burnTickTimer <= 0f)
                 {
                     _burnTickTimer = _burnTickInterval;
-                    TakeDamage(_burnDamagePerTick, _burnDamageType, _burnPenetration);
+                    ApplyDamage(_burnDamagePerTick, _burnDamageType, _burnPenetration,
+                                isCritical: false, knockback: false);
                 }
             }
 
@@ -147,7 +158,8 @@ namespace Swarm.Enemy
                 if (_poisonTickTimer <= 0f)
                 {
                     _poisonTickTimer = _poisonTickInterval;
-                    TakeDamage(_poisonDamagePerTick, _poisonDamageType, _poisonPenetration);
+                    ApplyDamage(_poisonDamagePerTick, _poisonDamageType, _poisonPenetration,
+                                isCritical: false, knockback: false);
                 }
             }
             else if (_isPoisoned)
@@ -172,6 +184,15 @@ namespace Swarm.Enemy
         public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower,
                                float penetration = 0f, bool isCritical = false)
         {
+            ApplyDamage(amount, damageType, penetration, isCritical, knockback: true);
+        }
+
+        // Burn and poison ticks route here with knockback off. A damage-over-time effect firing
+        // every tick would keep the enemy permanently airborne and permanently unable to steer,
+        // which reads as a stun, not a hit.
+        private void ApplyDamage(int amount, DamageStatType damageType, float penetration,
+                                 bool isCritical, bool knockback)
+        {
             if (_isDead) return;
 
             var baseDefense = damageType == DamageStatType.MagicPower ? _magicDefenseBonus : _defenseBonus;
@@ -184,6 +205,12 @@ namespace Swarm.Enemy
             if (_currentHealth <= 0)
             {
                 Die();
+                return;
+            }
+
+            if (knockback && TryGetComponent<EnemyChaser>(out var chaser))
+            {
+                chaser.ApplyKnockbackFromTarget();
             }
         }
 
@@ -214,7 +241,7 @@ namespace Swarm.Enemy
                 if (pickup.TryGetComponent<ExperiencePickup>(out var experiencePickup))
                 {
                     experiencePickup.SetSourcePrefab(experiencePickupPrefab);
-                    experiencePickup.SetAmount(experienceReward);
+                    experiencePickup.SetAmount(Mathf.RoundToInt(experienceReward * _experienceMultiplier));
                 }
             }
 
