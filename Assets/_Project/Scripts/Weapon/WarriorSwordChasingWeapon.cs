@@ -83,7 +83,8 @@ namespace Swarm.Weapon
                 var spriteRenderer = bladeObject.AddComponent<SpriteRenderer>();
                 spriteRenderer.sprite = bladeSprite;
                 spriteRenderer.color = bladeColor;
-                spriteRenderer.sortingOrder = 1;
+                spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
+                spriteRenderer.sortingOrder = 0;
                 _blades.Add(bladeObject.AddComponent<ChasingBlade>());
             }
 

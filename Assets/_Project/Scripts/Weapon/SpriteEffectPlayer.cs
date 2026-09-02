@@ -41,7 +41,7 @@ namespace Swarm.Weapon
         /// blessing auras sit on the player. Hit effects stay unparented so they mark where the
         /// hit landed rather than following the player.</param>
         public static SpriteEffectPlayer Create(MonoBehaviour owner, string name, Material material,
-                                                Sprite[] frames, float frameDuration, int sortingOrder = 2,
+                                                Sprite[] frames, float frameDuration, int sortingOrder = 1,
                                                 Sprite warmUpSprite = null, Transform parent = null,
                                                 float initialScale = 1f)
         {
@@ -55,6 +55,7 @@ namespace Swarm.Weapon
             effectObject.transform.localScale = Vector3.one * initialScale;
 
             var renderer = effectObject.AddComponent<SpriteRenderer>();
+            renderer.sortingLayerName = SortingLayers.EFFECT;
             renderer.sortingOrder = sortingOrder;
             if (material != null) renderer.material = material;
             effectObject.SetActive(false);

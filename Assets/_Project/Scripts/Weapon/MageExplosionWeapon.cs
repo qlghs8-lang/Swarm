@@ -101,7 +101,8 @@ namespace Swarm.Weapon
             meteorObject.transform.localScale = Vector3.one * meteorVisualScale;
 
             var spriteRenderer = meteorObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sortingOrder = 2;
+            spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
+            spriteRenderer.sortingOrder = 1;
             if (effectMaterial != null) spriteRenderer.material = effectMaterial;
 
             var meteor = meteorObject.AddComponent<Meteor>();
@@ -135,7 +136,9 @@ namespace Swarm.Weapon
             patchObject.transform.position = position;
 
             var spriteRenderer = patchObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sortingOrder = -1;
+            // The patch is scorched ground: it belongs under whatever walks over it.
+            spriteRenderer.sortingLayerName = SortingLayers.DECAL;
+            spriteRenderer.sortingOrder = 2;
 
             var patch = patchObject.AddComponent<FirePatch>();
 

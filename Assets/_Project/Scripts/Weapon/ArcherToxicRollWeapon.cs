@@ -117,7 +117,9 @@ namespace Swarm.Weapon
 
             var spriteRenderer = cloudObject.AddComponent<SpriteRenderer>();
             spriteRenderer.color = gasCloudColor;
-            spriteRenderer.sortingOrder = 1; // above the enemy sprite (sortingOrder 0) so the monster reads as standing "inside" the semi-transparent gas
+            // Effect sits above Enemy, so the monster reads as standing "inside" the semi-transparent gas.
+            spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
+            spriteRenderer.sortingOrder = 0;
 
             var cloud = cloudObject.AddComponent<PoisonGasCloud>();
             cloud.Configure(radius, gasCloudDuration, tickInterval, damage,

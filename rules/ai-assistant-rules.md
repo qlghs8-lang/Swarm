@@ -151,6 +151,13 @@
 5. 물리 연산은 `FixedUpdate()`에서 처리
 6. 코루틴 남용 주의 → 단순 딜레이는 `Invoke` 활용 고려
 
+### 렌더링 정렬 규칙
+- 새로 만든 `SpriteRenderer`/`MeshRenderer`/`TilemapRenderer`는 **반드시 `sortingLayerName`을 지정**한다 — 지정하지 않으면 `Default` 레이어로 떨어져 아레나 바닥보다도 뒤에 그려진다
+- 레이어 이름은 문자열 리터럴 대신 `SortingLayers` 상수를 쓴다 (`Assets/_Project/Scripts/Rendering/SortingLayers.cs`)
+- 레이어 순서: `Ground → Decal → Prop → Wall → Pickup → Character → Effect → Overlay`
+- `sortingOrder`는 **같은 레이어 안의 예외**에만 쓴다. 레이어를 건너뛰려고 큰 숫자(±100 등)를 쓰지 않는다
+- 플레이어와 적은 같은 `Character` 레이어이며 앞뒤는 커스텀 정렬 축 `(0, 1, 0)`이 정한다 — 둘 중 하나를 위 레이어로 빼면 깊이가 거꾸로 읽히므로 분리 금지
+
 ### 코딩 컨벤션
 - **클래스**: PascalCase (예: `PlayerController`)
 - **메서드**: PascalCase (예: `MovePlayer()`)

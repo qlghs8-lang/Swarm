@@ -70,6 +70,36 @@ namespace Swarm.Weapon
                 : (Vector2)target.position;
         }
 
+        /// <summary>
+        /// Whether <paramref name="hit"/> falls inside a cone of half-angle
+        /// <paramref name="halfAngleDegrees"/> pointing along <paramref name="facing"/> from
+        /// <paramref name="center"/>.
+        ///
+        /// Cone weapons used to test hit.transform.position, but enemy transforms sit at the feet
+        /// while their colliders are offset up to body height (+0.75 on every enemy prefab), and
+        /// facing is measured between collider centres. That mismatch tilted each enemy's measured
+        /// direction downward by atan(0.75 / distance): zero when attacking straight up or down, and
+        /// up to ~57 degrees when attacking sideways at point-blank range. Enemies pressed against
+        /// the player dropped out of the cone entirely.
+        /// </summary>
+        public static bool IsInsideCone(Collider2D hit, Vector2 center, Vector2 facing, float halfAngleDegrees)
+        {
+            if (hit == null) return false;
+
+            var bounds = hit.bounds;
+            var toEnemy = (Vector2)bounds.center - center;
+            var distance = toEnemy.magnitude;
+            var enemyRadius = Mathf.Max(bounds.extents.x, bounds.extents.y);
+
+            // Touching or overlapping the swing origin: there is no meaningful direction left to test.
+            if (distance <= enemyRadius || distance <= Mathf.Epsilon) return true;
+
+            // Widen the cone by the enemy's angular size so a body clipping the edge still counts,
+            // instead of testing a single point against a hard edge.
+            var toleranceDegrees = Mathf.Asin(Mathf.Clamp01(enemyRadius / distance)) * Mathf.Rad2Deg;
+            return Vector2.Angle(facing, toEnemy) <= halfAngleDegrees + toleranceDegrees;
+        }
+
         public static Transform FindNearest(Vector2 origin, float range)
         {
             var count = OverlapEnemies(origin, range, QueryBuffer);

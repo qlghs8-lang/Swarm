@@ -22,14 +22,12 @@ namespace Swarm.Arena
         private const string RootName = "Arena (Runtime)";
         private const int Seed = 20260901;
 
-        // Ground sits behind everything; props sit above the ground but below characters (0).
-        private const int GroundOrder = -100;
-        private const int DirtOrder = -90;
-        private const int SigilOrder = -80;
-        private const int PropOrder = -70;
-        // The player is clamped a unit inside the wall, so it never overlaps far enough for the
-        // wall to need per-row sorting against characters.
-        private const int WallOrder = -60;
+        // Depth is carried by the sorting layers (Ground < Decal < Prop < Wall < ...), so the
+        // orders below only separate pieces that share one layer.
+        // The player is clamped a unit inside the wall, so the wall never overlaps far enough to
+        // need per-row sorting against characters — it can stay a flat layer of its own.
+        private const int DirtOrder = 0;
+        private const int SigilOrder = 1;
 
         // The wall sits just outside the clamp line so the player stands in front of the stones
         // rather than buried in them.
@@ -73,15 +71,15 @@ namespace Swarm.Arena
 
             BuildGround(root.transform, grass, random);
             ScatterBand(root.transform, "Dirt", LoadAll("Dirt_Patch_01", "Dirt_Patch_02", "Dirt_Patch_03"),
-                        DirtPatchCount, DirtBandInner, DirtBandOuter, DirtOrder, random);
+                        DirtPatchCount, DirtBandInner, DirtBandOuter, SortingLayers.DECAL, DirtOrder, random);
             PlaceSigil(root.transform);
             ScatterBand(root.transform, "Prop",
                         LoadAll("Deco_Stone", "Deco_Flower", "Deco_TallGrass", "Deco_Bush"),
-                        PropCount, PropCentreClearance, ArenaBounds.Radius - 1.5f, PropOrder, random);
+                        PropCount, PropCentreClearance, ArenaBounds.Radius - 1.5f, SortingLayers.PROP, 0, random);
             ScatterBand(root.transform, "OuterProp",
                         LoadAll("Deco_Stone", "Deco_Flower", "Deco_TallGrass", "Deco_Bush"),
                         OuterPropCount, ArenaBounds.Radius + 1.5f, ArenaBounds.Radius + GroundMargin,
-                        PropOrder, random);
+                        SortingLayers.PROP, 0, random);
             BuildWall(root.transform, LoadAll("Wall_Stone_01", "Wall_Stone_02", "Wall_Stone_03"), random);
         }
 
@@ -112,7 +110,8 @@ namespace Swarm.Arena
             mapObject.transform.SetParent(gridObject.transform, false);
 
             var renderer = mapObject.GetComponent<TilemapRenderer>();
-            renderer.sortingOrder = GroundOrder;
+            renderer.sortingLayerName = SortingLayers.GROUND;
+            renderer.sortingOrder = 0;
 
             var tiles = new Tile[grass.Count];
             for (var i = 0; i < grass.Count; i++)
@@ -141,15 +140,15 @@ namespace Swarm.Arena
             var sprite = Resources.Load<Sprite>("Ground/Center_Sigil");
             if (sprite == null) return;
 
-            CreateSprite(parent, "CentreSigil", sprite, Vector2.zero, 0f, SigilOrder);
+            CreateSprite(parent, "CentreSigil", sprite, Vector2.zero, 0f, SortingLayers.DECAL, SigilOrder);
         }
 
         /// <summary>Scatters <paramref name="count"/> sprites uniformly by area between two radii.
         /// Sampling on sqrt of the radius keeps the density even; sampling the radius directly
         /// would crowd everything toward the middle.</summary>
         private static void ScatterBand(Transform parent, string name, List<Sprite> sprites, int count,
-                                        float innerRadius, float outerRadius, int sortingOrder,
-                                        System.Random random)
+                                        float innerRadius, float outerRadius, string sortingLayer,
+                                        int sortingOrder, System.Random random)
         {
             if (sprites.Count == 0 || count <= 0) return;
 
@@ -166,7 +165,7 @@ namespace Swarm.Arena
                 var position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
                 var sprite = sprites[random.Next(sprites.Count)];
-                var instance = CreateSprite(group, name, sprite, position, 0f, sortingOrder);
+                var instance = CreateSprite(group, name, sprite, position, 0f, sortingLayer, sortingOrder);
                 // Mirroring doubles the apparent variety for free. Never rotated: these are lit
                 // from above, and a rotated stone would light from the wrong side.
                 if (random.Next(2) == 0)
@@ -192,12 +191,14 @@ namespace Swarm.Arena
             {
                 var angle = i / (float)count * Mathf.PI * 2f;
                 var position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * WallRadius;
-                CreateSprite(group, "Stone", sprites[random.Next(sprites.Count)], position, 0f, WallOrder);
+                CreateSprite(group, "Stone", sprites[random.Next(sprites.Count)], position, 0f,
+                             SortingLayers.WALL, 0);
             }
         }
 
         private static GameObject CreateSprite(Transform parent, string name, Sprite sprite,
-                                               Vector2 position, float rotationDegrees, int sortingOrder)
+                                               Vector2 position, float rotationDegrees,
+                                               string sortingLayer, int sortingOrder)
         {
             var instance = new GameObject(name, typeof(SpriteRenderer));
             instance.transform.SetParent(parent, false);
@@ -206,6 +207,7 @@ namespace Swarm.Arena
 
             var renderer = instance.GetComponent<SpriteRenderer>();
             renderer.sprite = sprite;
+            renderer.sortingLayerName = sortingLayer;
             renderer.sortingOrder = sortingOrder;
             return instance;
         }

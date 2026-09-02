@@ -75,7 +75,10 @@ namespace Swarm.Enemy
             var meshFilter = telegraphObject.AddComponent<MeshFilter>();
             var meshRenderer = telegraphObject.AddComponent<MeshRenderer>();
             meshRenderer.material = new Material(Shader.Find("Sprites/Default")) { color = telegraphColor };
-            meshRenderer.sortingOrder = 1;
+            // The telegraph is painted on the floor, so it sits under the boss and the crowd
+            // rather than over them.
+            meshRenderer.sortingLayerName = SortingLayers.DECAL;
+            meshRenderer.sortingOrder = 3;
 
             _telegraphMesh = new Mesh();
             meshFilter.mesh = _telegraphMesh;

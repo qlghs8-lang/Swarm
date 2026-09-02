@@ -46,7 +46,8 @@ namespace Swarm.Weapon
             var meshFilter = indicatorObject.AddComponent<MeshFilter>();
             var meshRenderer = indicatorObject.AddComponent<MeshRenderer>();
             meshRenderer.material = new Material(Shader.Find("Sprites/Default")) { color = indicatorColor };
-            meshRenderer.sortingOrder = 1;
+            meshRenderer.sortingLayerName = SortingLayers.EFFECT;
+            meshRenderer.sortingOrder = 0;
 
             _indicatorMesh = new Mesh();
             meshFilter.mesh = _indicatorMesh;
@@ -100,7 +101,7 @@ namespace Swarm.Weapon
             var damageMultiplier = DamageMultiplier * (_stats != null ? _stats.RollDamageMultiplier() : 1f);
             var isCritical = _stats != null && _stats.LastAttackWasCritical;
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
-            var forwardDotThreshold = Mathf.Cos(forwardAngleDegrees * 0.5f * Mathf.Deg2Rad);
+            var halfAngleDegrees = forwardAngleDegrees * 0.5f;
 
             EnemyTargeting.OverlapEnemies(origin, radius, _hitBuffer);
             var hits = _hitBuffer;
@@ -108,8 +109,7 @@ namespace Swarm.Weapon
             {
                 if (!hit.CompareTag("Enemy")) continue;
 
-                var toEnemy = ((Vector2)hit.transform.position - origin).normalized;
-                if (Vector2.Dot(facing, toEnemy) < forwardDotThreshold) continue;
+                if (!EnemyTargeting.IsInsideCone(hit, origin, facing, halfAngleDegrees)) continue;
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {

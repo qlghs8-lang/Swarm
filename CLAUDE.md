@@ -37,8 +37,12 @@ Assets/
     │   ├── Enemy/
     │   ├── Weapon/
     │   ├── LevelUp/
+    │   ├── Arena/
+    │   ├── Audio/
+    │   ├── Rendering/
     │   ├── Spawner/
-    │   └── UI/
+    │   ├── UI/
+    │   └── Game/
     ├── Prefabs/
     ├── Scenes/
     ├── Materials/
@@ -117,5 +121,5 @@ Player 8방향 이동 로직을 Input System 기반으로 구현해줘"
 
 ---
 
-**마지막 업데이트**: 2026-07-14
+**마지막 업데이트**: 2026-09-02
 **관리**: Development Team

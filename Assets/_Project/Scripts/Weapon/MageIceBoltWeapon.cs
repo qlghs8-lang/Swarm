@@ -87,7 +87,8 @@ namespace Swarm.Weapon
             boltObject.transform.localScale = Vector3.one * visualScale;
 
             var spriteRenderer = boltObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.sortingOrder = 1;
+            spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
+            spriteRenderer.sortingOrder = 0;
 
             var bolt = boltObject.AddComponent<ChainLightningBolt>();
             bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, freezeChance, freezeDuration, penetration, damageType, PlayHitEffect, isCritical);
