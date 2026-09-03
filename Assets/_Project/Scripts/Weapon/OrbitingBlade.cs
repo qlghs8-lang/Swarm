@@ -92,15 +92,14 @@ namespace Swarm.Weapon
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                     _lastHitTime[hit] = Time.time;
 
-                    // EnemyHealth knocks anything it damages straight away from the player, which
-                    // for an orbiting blade is straight out of the ring. The knockback (0.66 units)
-                    // is most of the blade's hit band (1.0 wide), so one hit resets an approach --
-                    // and past four blades the ring re-hits before an enemy can cross, walling the
-                    // player in while they stand still. Sweeping them along the ring instead leaves
-                    // their approach intact, and reads as being swatted aside by the blade rather
-                    // than repelled by a force field. ApplyKnockback assigns linearVelocity
-                    // outright, so this replaces the radial knockback applied a moment ago; the
-                    // active check skips an enemy the hit killed and returned to the pool.
+                    // The blade takes the default radial knockback (TakeDamage above passes none)
+                    // and applies its own along the ring instead. Radial would push straight out
+                    // of the ring: the knockback (0.66 units) is most of the blade's hit band
+                    // (1.0 wide), so one hit resets an approach -- and past four blades the ring
+                    // re-hits before an enemy can cross, walling the player in while they stand
+                    // still. Sweeping them along the ring leaves their approach intact, and reads
+                    // as being swatted aside by the blade rather than repelled by a force field.
+                    // The active check skips an enemy the hit killed and returned to the pool.
                     if (hit.gameObject.activeInHierarchy && hit.TryGetComponent<EnemyChaser>(out var chaser))
                     {
                         chaser.ApplyKnockback(tangent);

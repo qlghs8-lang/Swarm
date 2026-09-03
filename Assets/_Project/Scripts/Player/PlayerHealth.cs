@@ -63,7 +63,7 @@ namespace Swarm.Player
         }
 
         public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower,
-                               float penetration = 0f, bool isCritical = false)
+                               float penetration = 0f, bool isCritical = false, float knockbackScale = 0f)
         {
             if (IsDead || _invincibleTimer > 0f) return;
 

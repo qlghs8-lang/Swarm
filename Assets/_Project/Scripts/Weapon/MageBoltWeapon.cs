@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Swarm.Enemy;
 using Swarm.Player;
 using UnityEngine;
 
@@ -14,6 +15,11 @@ namespace Swarm.Weapon
         [SerializeField] private int baseTargetCount = 2;
         [SerializeField] private int levelsPerExtraTarget = 2;
         [SerializeField] private GameObject strikeFlashPrefab;
+
+        // A brief hitstop on everything the strike touches. The mage has no knockback, so this is
+        // what buys the space a melee shove would: at a 1.1s cast it is roughly a quarter of the
+        // time, enough to interrupt an approach without reading as a lockdown.
+        [SerializeField] private float stunDuration = 0.3f;
 
         private float _timer;
         private PlayerStats _stats;
@@ -88,6 +94,11 @@ namespace Swarm.Weapon
                 {
                     damageable.TakeDamage(damage, damageType, penetration, isCritical);
                     PlayerDamageEvents.RaiseDamageDealt(target.gameObject);
+
+                    if (target.gameObject.activeInHierarchy && target.TryGetComponent<EnemyChaser>(out var chaser))
+                    {
+                        chaser.ApplyStun(stunDuration);
+                    }
                 }
 
                 SpawnStrikeFlash(EnemyTargeting.GetHitPoint(target));

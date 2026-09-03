@@ -18,8 +18,8 @@ namespace Swarm.Weapon
         private float _speed;
         private int _remainingJumps;
         private float _chainRange;
-        private float _freezeChance;
-        private float _freezeDuration;
+        private float _slowMultiplier = 1f;
+        private float _slowDuration;
         private float _penetration;
         private bool _isCritical;
         private DamageStatType _damageType;
@@ -33,7 +33,7 @@ namespace Swarm.Weapon
         private readonly HashSet<Transform> _hitTargets = new();
 
         public void Launch(Transform target, int damage, float speed, int maxJumps, float chainRange,
-            float freezeChance, float freezeDuration, float penetration, DamageStatType damageType,
+            float slowMultiplier, float slowDuration, float penetration, DamageStatType damageType,
             System.Action<Vector2> onHit = null, bool isCritical = false)
         {
             _target = target;
@@ -41,8 +41,8 @@ namespace Swarm.Weapon
             _speed = speed;
             _remainingJumps = maxJumps;
             _chainRange = chainRange;
-            _freezeChance = freezeChance;
-            _freezeDuration = freezeDuration;
+            _slowMultiplier = slowMultiplier;
+            _slowDuration = slowDuration;
             _penetration = penetration;
             _damageType = damageType;
             _onHit = onHit;
@@ -98,9 +98,11 @@ namespace Swarm.Weapon
                 PlayerDamageEvents.RaiseDamageDealt(_target.gameObject);
             }
 
-            if (Random.value < _freezeChance && _target.TryGetComponent<EnemyChaser>(out var chaser))
+            // Every link slows. The chain is the weapon's identity, so the control it leaves
+            // behind is a trail of dragging enemies rather than a lucky lockdown on one of them.
+            if (_target.TryGetComponent<EnemyChaser>(out var chaser))
             {
-                chaser.ApplyFreeze(_freezeDuration);
+                chaser.ApplySlow(_slowMultiplier, _slowDuration);
             }
 
             if (_remainingJumps <= 0)

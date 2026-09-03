@@ -24,6 +24,8 @@ namespace Swarm.Weapon
         [SerializeField] private Sprite[] slashEffectFrames;
         [SerializeField] private float slashFrameDuration = 0.05f;
         [SerializeField] private Material effectMaterial;
+        // Knockback is opt-in per weapon (see IDamageable.TakeDamage).
+        [SerializeField, Range(0f, 2f)] private float knockbackScale = 1f;
 
         private float _timer;
         private float _indicatorTimer;
@@ -113,7 +115,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration, isCritical);
+                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration, isCritical, knockbackScale);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }

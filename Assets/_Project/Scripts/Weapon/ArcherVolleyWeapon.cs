@@ -8,6 +8,9 @@ namespace Swarm.Weapon
         [SerializeField] private ProjectileWeaponData data;
         [SerializeField] private Sprite[] hitEffectFrames;
         [SerializeField] private float hitEffectFrameDuration = 0.045f;
+        // Knockback is opt-in per weapon (see IDamageable.TakeDamage).
+        [SerializeField, Range(0f, 2f)] private float knockbackScale = 1f;
+
         [SerializeField] private Material effectMaterial;
 
         private float _timer;
@@ -71,7 +74,7 @@ namespace Swarm.Weapon
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect, isCritical);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect, isCritical, knockbackScale);
                 }
             }
 

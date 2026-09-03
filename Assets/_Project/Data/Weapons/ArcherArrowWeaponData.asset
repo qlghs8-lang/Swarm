@@ -17,5 +17,5 @@ MonoBehaviour:
   projectileSpeed: 10
   projectilePrefab: {fileID: 4232242595865490737, guid: 482368538a7da2d4a9e0acb324d5cf83, type: 3}
   range: 7
-  projectileCount: 4
+  projectileCount: 3
   spreadAngleDegrees: 0

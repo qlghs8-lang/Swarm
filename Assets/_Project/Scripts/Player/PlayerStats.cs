@@ -62,6 +62,8 @@ namespace Swarm.Player
         public float CooldownReduction => _cooldownReduction + _tempCooldownReduction;
         public float MagicPenetration => _magicPenetration + _tempMagicPenetration;
         public float PermanentCooldownReduction => _cooldownReduction;
+        public bool IsTemporaryBuffActive => _buffTimer > 0f;
+        public float TemporaryBuffRemaining => Mathf.Max(0f, _buffTimer);
 
         private void Awake()
         {

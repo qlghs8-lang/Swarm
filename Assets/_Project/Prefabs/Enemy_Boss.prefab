@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 9000000000000000009}
   - component: {fileID: 6613452153873267284}
   - component: {fileID: 9000000000000000010}
+  - component: {fileID: 9000000000000000011}
   m_Layer: 7
   m_Name: Enemy_Boss
   m_TagString: Enemy
@@ -231,11 +232,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 905c734aaa4b6b84686426afea988abc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.BossSlamAttack
-  interval: 3.5
+  interval: 7
   radius: 8
   damage: 25
   telegraphDuration: 1
   telegraphColor: {r: 1, g: 0.2, b: 0.2, a: 0.35}
+  firstCastDelay: 3
+  perspectiveSquash: 0.6
+  impactEffectPrefab: {fileID: 6387881767288092428, guid: 40eeb210eeec4904cac65f6ca349e5c7, type: 3}
+  impactEffectLifetime: 0.5
 --- !u!95 &6613452153873267284
 Animator:
   serializedVersion: 7
@@ -271,4 +276,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.EnemyStatusImmunity
   immuneToKnockback: 1
-  immuneToFreeze: 1
+  immuneToStun: 1
+  immuneToSlow: 0
+--- !u!114 &9000000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9000000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d03bc1172c2b40b78da40191fc50991b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Swarm.Enemy.BossMeteorAttack
+  interval: 10
+  dropCount: 3
+  warningDuration: 0.85
+  delayBetweenDrops: 0.55
+  firstCastDelay: 5
+  radius: 1.8
+  damage: 30
+  aimScatter: 0.6
+  warningColor: {r: 1, g: 0.55, b: 0.1, a: 0.35}
+  fallingRockPrefab: {fileID: 2433792610398808237, guid: 7e3a46435852319409337b04a08ddb80, type: 3}
+  fallHeight: 12
+  impactEffectPrefab: {fileID: 3194521937114288268, guid: 2d82a1141ea58294d8b173075969676a, type: 3}
+  impactEffectLifetime: 0.5

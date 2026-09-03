@@ -10,6 +10,11 @@ namespace Swarm.Weapon
         [SerializeField] private ProjectileWeaponData data;
         [SerializeField] private float rotationSpeed = 90f;
 
+        // Spray pierces everything and fires constantly, so every enemy in the fan takes a hit
+        // several times a second. At full knockback that reads as a wind tunnel; this scales the
+        // per-hit push down so the weapon shreds crowds without shoving them off screen.
+        [SerializeField, Range(0f, 1f)] private float knockbackScale = 0.3f;
+
         private float _timer;
         private float _currentAngleDegrees;
         private ObjectPool _pool;
@@ -63,7 +68,7 @@ namespace Swarm.Weapon
                 var instance = _pool.Get(origin, Quaternion.identity);
                 if (instance.TryGetComponent<Projectile>(out var projectile))
                 {
-                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, PierceCount, DamageStatType.AttackPower, penetration, isCritical: isCritical);
+                    projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, PierceCount, DamageStatType.AttackPower, penetration, isCritical: isCritical, knockbackScale: knockbackScale);
                 }
             }
         }

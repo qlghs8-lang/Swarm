@@ -73,7 +73,14 @@ namespace Swarm.Weapon
         {
             for (var i = 0; i < count; i++)
             {
-                if (target == null || !target.gameObject.activeInHierarchy) yield break;
+                // Retarget when the current target dies mid-burst so the remaining
+                // projectiles (including ProjectileCount bonuses) are not wasted.
+                if (target == null || !target.gameObject.activeInHierarchy)
+                {
+                    var retargetOrigin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
+                    target = EnemyTargeting.FindNearest(retargetOrigin, data.Range);
+                    if (target == null) yield break;
+                }
 
                 var origin = _stats != null ? _stats.AttackOrigin : (Vector2)transform.position;
                 var direction = (EnemyTargeting.GetHitPoint(target) - origin).normalized;

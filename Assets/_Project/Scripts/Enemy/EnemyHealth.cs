@@ -182,16 +182,16 @@ namespace Swarm.Enemy
         }
 
         public void TakeDamage(int amount, DamageStatType damageType = DamageStatType.AttackPower,
-                               float penetration = 0f, bool isCritical = false)
+                               float penetration = 0f, bool isCritical = false, float knockbackScale = 0f)
         {
-            ApplyDamage(amount, damageType, penetration, isCritical, knockback: true);
+            ApplyDamage(amount, damageType, penetration, isCritical, knockback: true, knockbackScale);
         }
 
         // Burn and poison ticks route here with knockback off. A damage-over-time effect firing
         // every tick would keep the enemy permanently airborne and permanently unable to steer,
         // which reads as a stun, not a hit.
         private void ApplyDamage(int amount, DamageStatType damageType, float penetration,
-                                 bool isCritical, bool knockback)
+                                 bool isCritical, bool knockback, float knockbackScale = 1f)
         {
             if (_isDead) return;
 
@@ -208,9 +208,9 @@ namespace Swarm.Enemy
                 return;
             }
 
-            if (knockback && TryGetComponent<EnemyChaser>(out var chaser))
+            if (knockback && knockbackScale > 0f && TryGetComponent<EnemyChaser>(out var chaser))
             {
-                chaser.ApplyKnockbackFromTarget();
+                chaser.ApplyKnockbackFromTarget(knockbackScale);
             }
         }
 

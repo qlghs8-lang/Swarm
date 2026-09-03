@@ -13,8 +13,10 @@ namespace Swarm.Weapon
         [SerializeField] private int baseJumps = 2;
         [SerializeField] private int levelsPerExtraJump = 2;
         [SerializeField] private float chainRange = 4f;
-        [SerializeField] private float freezeChance = 0.1f;
-        [SerializeField] private float freezeDuration = 1f;
+        // Chain lightning's control is a slow, not a stun: it lands on every link instead of
+        // proccing, so it has to be something a crowd can be left standing in.
+        [SerializeField, Range(0f, 1f)] private float slowMultiplier = 0.7f;
+        [SerializeField] private float slowDuration = 1.5f;
         [SerializeField] private Sprite boltSprite;
         [SerializeField] private Color boltColor = new(0.5f, 0.85f, 1f, 0.95f);
         [SerializeField] private Sprite[] travelFrames;
@@ -91,7 +93,7 @@ namespace Swarm.Weapon
             spriteRenderer.sortingOrder = 0;
 
             var bolt = boltObject.AddComponent<ChainLightningBolt>();
-            bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, freezeChance, freezeDuration, penetration, damageType, PlayHitEffect, isCritical);
+            bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, slowMultiplier, slowDuration, penetration, damageType, PlayHitEffect, isCritical);
 
             if (travelFrames != null && travelFrames.Length > 0)
             {

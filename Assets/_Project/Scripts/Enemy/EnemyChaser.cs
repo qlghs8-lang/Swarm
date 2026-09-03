@@ -59,7 +59,13 @@ namespace Swarm.Enemy
         private Rigidbody2D _rigidbody;
         private Transform _target;
         private float _speedMultiplier = 1f;
-        private float _freezeTimer;
+        private float _stunTimer;
+
+        // A timed slow, kept separate from _speedMultiplier (which the poison owns and clears back
+        // to 1 when it expires). Two systems sharing one multiplier means whichever ends first
+        // wipes the other; multiplying two independent tracks lets them stack and expire cleanly.
+        private float _slowMultiplier = 1f;
+        private float _slowTimer;
         // Which way this enemy shoves a blocker it hits dead-on. Fixed per instance so it commits
         // to one side instead of jittering left-right against the same target every step.
         private float _shoveSide;
@@ -68,6 +74,11 @@ namespace Swarm.Enemy
         private float _aimOffsetRadians;
         private float _baseMass;
         private float _knockbackTimer;
+
+        // Counts how many systems are currently holding this enemy in place (the boss's patterns
+        // planting it for a wind-up, for example). A counter rather than a flag so two overlapping
+        // holds cannot have the first one to finish release the enemy out from under the second.
+        private int _movementHolds;
         // The direction this enemy is steering, cached from FixedUpdate. The shove below used to
         // read the live velocity instead, which fed back on itself: a push turned the velocity,
         // the turned velocity aimed the next push somewhere else, and in a tight clump every body
@@ -78,20 +89,37 @@ namespace Swarm.Enemy
         // read on every hit, and every hit is also a TryGetComponent from EnemyHealth already.
         private EnemyStatusImmunity _statusImmunity;
 
+        // Every collider on this enemy, with the layers each one was authored to ignore. A held
+        // enemy adds its own layer to that list so the pack slides through it, and gets its
+        // original masks back on release rather than an assumed empty one.
+        private Collider2D[] _colliders;
+        private int[] _colliderExcludeLayers;
+
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             TryGetComponent(out _statusImmunity);
             _baseMass = _rigidbody.mass;
             _shoveSide = (GetInstanceID() & 1) == 0 ? 1f : -1f;
+
+            _colliders = GetComponents<Collider2D>();
+            _colliderExcludeLayers = new int[_colliders.Length];
+            for (var i = 0; i < _colliders.Length; i++)
+            {
+                _colliderExcludeLayers[i] = _colliders[i].excludeLayers;
+            }
         }
 
         private void OnEnable()
         {
             _speedMultiplier = 1f;
-            _freezeTimer = 0f;
+            _stunTimer = 0f;
+            _slowMultiplier = 1f;
+            _slowTimer = 0f;
             _knockbackTimer = 0f;
             _steerHeading = Vector2.zero;
+            _movementHolds = 0;
+            SetCrowdPassThrough(false);
 
             // Rolled per spawn rather than per prefab, so a pooled body that comes back is not the
             // same individual it was last time.
@@ -112,11 +140,71 @@ namespace Swarm.Enemy
             _speedMultiplier = multiplier;
         }
 
-        public void ApplyFreeze(float duration)
+        /// <summary>
+        /// Plants this enemy where it stands until the matching <see cref="ReleaseMovement"/>.
+        /// Unlike a stun this is not crowd control -- it is the enemy's own behaviour holding
+        /// still, so status immunity does not apply and nothing cuts it short.
+        /// </summary>
+        public void HoldMovement()
         {
-            if (_statusImmunity != null && _statusImmunity.ImmuneToFreeze) return;
+            _movementHolds++;
+            if (_movementHolds == 1) SetCrowdPassThrough(true);
+        }
 
-            _freezeTimer = Mathf.Max(_freezeTimer, duration);
+        /// <summary>Releases one hold taken by <see cref="HoldMovement"/>.</summary>
+        public void ReleaseMovement()
+        {
+            if (_movementHolds == 0) return;
+
+            _movementHolds--;
+            if (_movementHolds == 0) SetCrowdPassThrough(false);
+        }
+
+        /// <summary>
+        /// While held, this enemy stops colliding with its own kind. Standing still in the middle
+        /// of the pack otherwise means a hundred bodies leaning on one spot: the boss planted for a
+        /// wind-up was slowly bulldozed off its own telegraph by the crowd it had walked into, and
+        /// the crowd itself jammed against it. Letting them slide through keeps the boss on the
+        /// circle it drew and keeps the pack flowing. The player's layer is untouched, so the body
+        /// is still solid to whoever is dodging it, and the hurtbox trigger still lands its damage.
+        /// </summary>
+        private void SetCrowdPassThrough(bool enabled)
+        {
+            if (_colliders == null) return;
+
+            var ownLayer = 1 << gameObject.layer;
+            for (var i = 0; i < _colliders.Length; i++)
+            {
+                var collider = _colliders[i];
+                if (collider == null) continue;
+
+                var mask = enabled ? _colliderExcludeLayers[i] | ownLayer : _colliderExcludeLayers[i];
+                collider.excludeLayers = mask;
+            }
+        }
+
+        /// <summary>Stops this enemy dead for the duration. Hard control: the longer of the
+        /// running stun and the new one wins, so overlapping procs do not cut each other short.
+        /// </summary>
+        public void ApplyStun(float duration)
+        {
+            if (duration <= 0f) return;
+            if (_statusImmunity != null && _statusImmunity.ImmuneToStun) return;
+
+            _stunTimer = Mathf.Max(_stunTimer, duration);
+        }
+
+        /// <summary>Scales this enemy's move speed for the duration. Soft control, so the strongest
+        /// slow in effect wins and refreshing extends it rather than stacking multiplicatively --
+        /// otherwise a chaining weapon that re-applies every second grinds a crowd to a halt.
+        /// </summary>
+        public void ApplySlow(float multiplier, float duration)
+        {
+            if (duration <= 0f || multiplier >= 1f) return;
+            if (_statusImmunity != null && _statusImmunity.ImmuneToSlow) return;
+
+            _slowMultiplier = _slowTimer > 0f ? Mathf.Min(_slowMultiplier, multiplier) : multiplier;
+            _slowTimer = Mathf.Max(_slowTimer, duration);
         }
 
         /// <summary>
@@ -159,7 +247,7 @@ namespace Swarm.Enemy
 
         private void OnCollisionStay2D(Collision2D collision)
         {
-            if (crowdPushForce <= 0f || _freezeTimer > 0f) return;
+            if (crowdPushForce <= 0f || _stunTimer > 0f) return;
 
             var body = collision.rigidbody;
             if (body == null || !collision.collider.CompareTag("Enemy")) return;
@@ -189,9 +277,25 @@ namespace Swarm.Enemy
 
         private void FixedUpdate()
         {
-            if (_freezeTimer > 0f)
+            if (_slowTimer > 0f)
             {
-                _freezeTimer -= Time.fixedDeltaTime;
+                _slowTimer -= Time.fixedDeltaTime;
+                if (_slowTimer <= 0f) _slowMultiplier = 1f;
+            }
+
+            if (_movementHolds > 0)
+            {
+                // Steering intent is cleared as well, so the crowd shove in OnCollisionStay2D goes
+                // quiet too: a boss planted for a wind-up should not still be pushing the pack
+                // along the heading it had when it stopped.
+                _steerHeading = Vector2.zero;
+                _rigidbody.linearVelocity = Vector2.zero;
+                return;
+            }
+
+            if (_stunTimer > 0f)
+            {
+                _stunTimer -= Time.fixedDeltaTime;
                 _rigidbody.linearVelocity = Vector2.zero;
                 return;
             }
@@ -221,7 +325,7 @@ namespace Swarm.Enemy
 
             var aim = Rotate(direction.normalized, _aimOffsetRadians);
             _steerHeading = aim;
-            var desired = aim * (moveSpeed * _speedMultiplier * _speedScale);
+            var desired = aim * (moveSpeed * _speedMultiplier * _slowMultiplier * _speedScale);
             _rigidbody.linearVelocity = Vector2.MoveTowards(
                 _rigidbody.linearVelocity, desired,
                 acceleration * _accelerationScale * Time.fixedDeltaTime);

@@ -33,10 +33,21 @@ namespace Swarm.Weapon
             _healEffect?.Hide();
         }
 
+        public float EffectiveCooldown
+        {
+            get
+            {
+                var cooldownMultiplier = CooldownMultiplier * (1f - (_stats != null ? _stats.CooldownReduction : 0f));
+                return Mathf.Max(0.5f, baseCooldown * cooldownMultiplier);
+            }
+        }
+
+        /// <summary>0 = just fired, 1 = ready to fire.</summary>
+        public float CooldownProgress => Mathf.Clamp01(_timer / EffectiveCooldown);
+
         private void Update()
         {
-            var cooldownMultiplier = CooldownMultiplier * (1f - (_stats != null ? _stats.CooldownReduction : 0f));
-            var effectiveCooldown = Mathf.Max(0.5f, baseCooldown * cooldownMultiplier);
+            var effectiveCooldown = EffectiveCooldown;
 
             _timer += Time.deltaTime;
             if (_timer < effectiveCooldown) return;

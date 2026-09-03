@@ -3,6 +3,7 @@ using Swarm.Arena;
 using Swarm.Enemy;
 using Swarm.Weapon;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Swarm.Spawner
 {
@@ -60,7 +61,17 @@ namespace Swarm.Spawner
         [SerializeField] private float magicDefenseBonusEnd = 0.25f;
         [SerializeField] private float difficultyRampDuration = 600f;
         [SerializeField] private GameObject bossPrefab;
+        // Changing this default does NOT move the boss in an existing scene: the value is already
+        // serialized on the EnemySpawner in Game.unity / TestStage.unity, and the serialized value
+        // wins. Use the Inspector, or the F2 key below, to test the boss early.
         [SerializeField] private float bossSpawnTime = 600f;
+
+        // Tuning the boss meant either waiting out the full ten minutes or editing bossSpawnTime
+        // and remembering to put it back — and an edit made while play mode is running is thrown
+        // away the moment it stops, which looks exactly like the boss failing to spawn. F2 skips
+        // the wait without touching any serialized value. Editor and development builds only.
+        [Tooltip("에디터에서 F2를 누르면 보스를 즉시 소환합니다. 릴리즈 빌드에서는 동작하지 않습니다.")]
+        [SerializeField] private bool debugSpawnBossWithF2 = true;
         [SerializeField] private WaveDefinition[] waves;
 
         [Header("Experience")]
@@ -237,8 +248,24 @@ namespace Swarm.Spawner
 
         private void CheckBossSpawn()
         {
-            if (_bossSpawned || bossPrefab == null || _elapsedTime < bossSpawnTime) return;
+            if (_bossSpawned || bossPrefab == null) return;
 
+            if (_elapsedTime >= bossSpawnTime)
+            {
+                SpawnBoss();
+                return;
+            }
+
+            if (!debugSpawnBossWithF2) return;
+            if (!Application.isEditor && !Debug.isDebugBuild) return;
+            if (Keyboard.current == null || !Keyboard.current.f2Key.wasPressedThisFrame) return;
+
+            Debug.Log("EnemySpawner: boss summoned early by the F2 debug key.");
+            SpawnBoss();
+        }
+
+        private void SpawnBoss()
+        {
             _bossSpawned = true;
 
             var instance = Instantiate(bossPrefab, GetSpawnPosition(), Quaternion.identity);

@@ -17,6 +17,8 @@ namespace Swarm.Weapon
         [SerializeField] private EffectFrameSet[] stepEffects;
         [SerializeField] private float effectFrameDuration = 0.05f;
         [SerializeField] private Material effectMaterial;
+        // Knockback is opt-in per weapon (see IDamageable.TakeDamage).
+        [SerializeField, Range(0f, 2f)] private float knockbackScale = 0.3f;
 
         private static readonly float[] StepEffectOriginOffset = { 0.3f, 0.52f, 0.15f };
         // Per step: StepEffectOriginOffset + (art's forward reach in px / PPU 100), so the artwork's
@@ -137,7 +139,7 @@ namespace Swarm.Weapon
 
                 if (hit.TryGetComponent<IDamageable>(out var damageable))
                 {
-                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration, isCritical);
+                    damageable.TakeDamage(Mathf.RoundToInt(data.Damage * damageMultiplier), DamageStatType.AttackPower, penetration, isCritical, knockbackScale);
                     PlayerDamageEvents.RaiseDamageDealt(hit.gameObject);
                 }
             }
