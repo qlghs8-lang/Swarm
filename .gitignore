@@ -112,3 +112,6 @@ InitTestScene*.unity*
 # Unity regenerates this default asset on its own; unused, not referenced by any script/scene
 /Assets/InputSystem_Actions.inputactions
 /Assets/InputSystem_Actions.inputactions.meta
+
+# Claude Code local settings (per-machine permission choices, not shared)
+/.claude/settings.local.json

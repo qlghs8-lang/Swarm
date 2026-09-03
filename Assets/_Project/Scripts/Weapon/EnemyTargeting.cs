@@ -110,6 +110,10 @@ namespace Swarm.Weapon
             {
                 var hit = QueryBuffer[i];
                 if (hit == null || !hit.CompareTag("Enemy")) continue;
+                // Breakable scenery shares the layer and the tag so that every weapon's damage
+                // path reaches it unchanged; auto-aim must not, or a pot standing closer than the
+                // swarm would soak the whole volley. See BreakableRegistry.
+                if (BreakableRegistry.Contains(hit)) continue;
 
                 var sqrDistance = ((Vector2)hit.transform.position - origin).sqrMagnitude;
                 if (sqrDistance < nearestSqrDistance)
@@ -147,6 +151,7 @@ namespace Swarm.Weapon
                 {
                     var hit = QueryBuffer[i];
                     if (hit == null || !hit.CompareTag("Enemy")) continue;
+                    if (BreakableRegistry.Contains(hit)) continue;
 
                     var sqrDistance = ((Vector2)hit.transform.position - origin).sqrMagnitude;
                     if (sqrDistance < bestSqrDistance)

@@ -29,12 +29,14 @@ namespace Swarm.Game
 
         /// <summary>Nothing calls this yet — every drop is worth 1. It exists so a big payout can
         /// be dropped as one pile instead of a shower of coins.</summary>
-        public void SetAmount(int value)
+        /// <param name="forcePileSprite">Show the pile whatever the amount. A smashed pot pays
+        /// less gold than the threshold but should still look like the bigger find it is.</param>
+        public void SetAmount(int value, bool forcePileSprite = false)
         {
             amount = value;
             if (_renderer == null) return;
 
-            var sprite = amount >= pileThreshold ? pileSprite : coinSprite;
+            var sprite = forcePileSprite || amount >= pileThreshold ? pileSprite : coinSprite;
             if (sprite != null) _renderer.sprite = sprite;
         }
 
