@@ -100,6 +100,12 @@ namespace Swarm.Spawner
         private readonly Dictionary<GameObject, ObjectPool> _pools = new();
         private readonly List<GameObject> _active = new();
 
+        // Membership mirror for _active. A killed enemy goes back to its pool but stays in the
+        // list until the next sweep, so an instance handed straight back out was added a second
+        // time — inflating ActiveEnemyCount (which the difficulty readout reports) and letting
+        // the spawn cap bite while fewer enemies were actually alive.
+        private readonly HashSet<GameObject> _activeSet = new();
+
         private void Start()
         {
             var player = GameObject.FindGameObjectWithTag("Player");
@@ -162,6 +168,9 @@ namespace Swarm.Spawner
                 if (enemy == null || !enemy.activeInHierarchy)
                 {
                     _active.RemoveAt(i);
+                    // Unconditional: Unity's == reports a destroyed object as null, so guarding
+                    // this would leave the entry behind for good. HashSet compares the reference.
+                    _activeSet.Remove(enemy);
                     continue;
                 }
 
@@ -307,7 +316,7 @@ namespace Swarm.Spawner
                 health.ResetHealth();
             }
 
-            _active.Add(instance);
+            if (_activeSet.Add(instance)) _active.Add(instance);
         }
 
         /// <summary>The drop multiplier for the stage the run is currently in. Applied at spawn,

@@ -25,6 +25,8 @@ namespace Swarm.Weapon
         private DamageStatType _damageType;
         private System.Action<Vector2> _onHit;
 
+        private RuntimeObjectPool _pool;
+
         private SpriteRenderer _spriteRenderer;
         private Sprite[] _travelFrames;
         private float _travelFrameDuration;
@@ -47,6 +49,24 @@ namespace Swarm.Weapon
             _damageType = damageType;
             _onHit = onHit;
             _isCritical = isCritical;
+
+            // Pooled: the previous flight's jump history and animation clock are still here, and
+            // _hitTargets holds Transforms of enemies that have themselves been recycled, so a
+            // stale entry would silently make the bolt refuse to jump to a live target.
+            _hitTargets.Clear();
+            _animTimer = 0f;
+        }
+
+        /// <summary>Set by the spawning weapon so the bolt is recycled instead of destroyed.</summary>
+        public void SetPool(RuntimeObjectPool pool)
+        {
+            _pool = pool;
+        }
+
+        private void Retire()
+        {
+            if (_pool != null) _pool.Release(gameObject);
+            else Destroy(gameObject);
         }
 
         public void SetTravelAnimation(SpriteRenderer spriteRenderer, Sprite[] travelFrames, float travelFrameDuration)
@@ -60,7 +80,7 @@ namespace Swarm.Weapon
         {
             if (_target == null || !_target.gameObject.activeInHierarchy)
             {
-                Destroy(gameObject);
+                Retire();
                 return;
             }
 
@@ -107,14 +127,14 @@ namespace Swarm.Weapon
 
             if (_remainingJumps <= 0)
             {
-                Destroy(gameObject);
+                Retire();
                 return;
             }
 
             var next = FindNextTarget();
             if (next == null)
             {
-                Destroy(gameObject);
+                Retire();
                 return;
             }
 

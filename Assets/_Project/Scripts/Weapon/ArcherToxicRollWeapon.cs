@@ -30,8 +30,10 @@ namespace Swarm.Weapon
         private PlayerController _controller;
         private PlayerHealth _health;
         private Rigidbody2D _rigidbody;
+        private RuntimeObjectPool _cloudPool;
 
         public float CooldownProgress01 { get; private set; } = 1f;
+        public float CooldownRemaining { get; private set; }
 
         private void Awake()
         {
@@ -39,6 +41,7 @@ namespace Swarm.Weapon
             _controller = GetComponent<PlayerController>();
             _health = GetComponent<PlayerHealth>();
             _rigidbody = GetComponent<Rigidbody2D>();
+            _cloudPool = new RuntimeObjectPool(CreateCloudObject);
         }
 
         private void Update()
@@ -50,6 +53,7 @@ namespace Swarm.Weapon
 
             if (_timer < effectiveCooldown) _timer += Time.deltaTime;
             CooldownProgress01 = Mathf.Clamp01(_timer / effectiveCooldown);
+            CooldownRemaining = Mathf.Max(0f, effectiveCooldown - _timer);
 
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
@@ -112,18 +116,32 @@ namespace Swarm.Weapon
             var radius = gasCloudRadius * (1f + (_stats != null ? _stats.AreaSizeBonus : 0f));
             var penetration = _stats != null ? _stats.GetPenetration() : 0f;
 
-            var cloudObject = new GameObject("PoisonGasCloud (Temp)");
+            var cloudObject = _cloudPool.Get();
             cloudObject.transform.position = position;
 
+            if (!cloudObject.TryGetComponent<PoisonGasCloud>(out var cloud)) return;
+            if (cloudObject.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
+            {
+                spriteRenderer.color = gasCloudColor;
+            }
+
+            cloud.SetPool(_cloudPool);
+            cloud.Configure(radius, gasCloudDuration, tickInterval, damage,
+                defensePenalty + levelBonus, Mathf.Max(0.1f, speedMultiplier - levelBonus), penetration, gasCloudFrames);
+        }
+
+        // The bare object only. Position and colour are re-applied on every roll.
+        private GameObject CreateCloudObject()
+        {
+            var cloudObject = new GameObject("PoisonGasCloud (Temp)");
+
             var spriteRenderer = cloudObject.AddComponent<SpriteRenderer>();
-            spriteRenderer.color = gasCloudColor;
             // Effect sits above Enemy, so the monster reads as standing "inside" the semi-transparent gas.
             spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
             spriteRenderer.sortingOrder = 0;
 
-            var cloud = cloudObject.AddComponent<PoisonGasCloud>();
-            cloud.Configure(radius, gasCloudDuration, tickInterval, damage,
-                defensePenalty + levelBonus, Mathf.Max(0.1f, speedMultiplier - levelBonus), penetration, gasCloudFrames);
+            cloudObject.AddComponent<PoisonGasCloud>();
+            return cloudObject;
         }
     }
 }

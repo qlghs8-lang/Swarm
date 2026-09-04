@@ -27,6 +27,7 @@ namespace Swarm.Weapon
 
         private float _elapsed;
         private SpriteRenderer _spriteRenderer;
+        private RuntimeObjectPool _pool;
         private readonly HashSet<EnemyHealth> _ignited = new();
 
         private void Awake()
@@ -46,12 +47,25 @@ namespace Swarm.Weapon
             _penetration = penetration;
             _frames = frames;
 
+            // Pooled: without this the reused patch would start at the previous life's elapsed
+            // time (expiring instantly), and _ignited still holds EnemyHealth references — which
+            // are themselves pooled, so a recycled enemy standing in a new patch would never
+            // catch fire.
+            _elapsed = 0f;
+            _ignited.Clear();
+
             transform.localScale = new Vector3(radius * VisualScaleMultiplier, radius * VisualScaleMultiplier, 1f);
 
             if (_frames != null && _frames.Length > 0 && _spriteRenderer != null)
             {
                 _spriteRenderer.sprite = _frames[0];
             }
+        }
+
+        /// <summary>Set by the spawning weapon so the patch is recycled instead of destroyed.</summary>
+        public void SetPool(RuntimeObjectPool pool)
+        {
+            _pool = pool;
         }
 
         private bool HasFullAnimation => _frames != null && _frames.Length > IntroFrameCount + OutroFrameCount;
@@ -61,7 +75,8 @@ namespace Swarm.Weapon
             _elapsed += Time.deltaTime;
             if (_elapsed >= _duration)
             {
-                Destroy(gameObject);
+                if (_pool != null) _pool.Release(gameObject);
+                else Destroy(gameObject);
                 return;
             }
 

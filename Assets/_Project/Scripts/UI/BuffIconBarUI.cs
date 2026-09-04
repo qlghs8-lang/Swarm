@@ -1,4 +1,4 @@
-using Swarm.Player;
+﻿using Swarm.Player;
 using Swarm.Weapon;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +7,8 @@ namespace Swarm.UI
 {
     /// <summary>
     /// HP 바 오른쪽에 붙는 버프 아이콘 줄.
-    /// 전사 레이지는 스택 수를, 마법사 힐/블레싱은 남은 쿨다운을 radial fill로 보여준다.
+    /// 전사 레이지는 스택 수를, 마법사 블레싱은 버프가 켜져 있는 동안 남은 지속시간을 radial fill로 보여준다.
+    /// 힐은 별도 아이콘을 띄우지 않는다.
     /// 슬롯은 런타임에 생성되므로 씬에는 이 컴포넌트와 스프라이트 참조만 있으면 된다.
     /// </summary>
     public class BuffIconBarUI : MonoBehaviour
@@ -15,7 +16,6 @@ namespace Swarm.UI
         [Header("Sprites")]
         [SerializeField] private Sprite slotFrameSprite;
         [SerializeField] private Sprite rageIcon;
-        [SerializeField] private Sprite healIcon;
         [SerializeField] private Sprite blessingIcon;
 
         [Header("Layout")]
@@ -33,13 +33,14 @@ namespace Swarm.UI
         private static Sprite _whiteSprite;
 
         private Slot _rageSlot;
-        private Slot _healSlot;
         private Slot _blessingSlot;
 
         private WarriorRageWeapon _rageWeapon;
-        private MageHealWeapon _healWeapon;
         private MageBlessingWeapon _blessingWeapon;
         private PlayerStats _stats;
+
+        // The stack count changes a handful of times a run, but ToString() ran every frame.
+        private int _shownRageStacks = -1;
 
         private class Slot
         {
@@ -57,13 +58,11 @@ namespace Swarm.UI
             if (player != null)
             {
                 player.TryGetComponent(out _rageWeapon);
-                player.TryGetComponent(out _healWeapon);
                 player.TryGetComponent(out _blessingWeapon);
                 player.TryGetComponent(out _stats);
             }
 
             _rageSlot = CreateSlot("RageSlot", rageIcon, true);
-            _healSlot = CreateSlot("HealSlot", healIcon, false);
             _blessingSlot = CreateSlot("BlessingSlot", blessingIcon, false);
         }
 
@@ -74,7 +73,12 @@ namespace Swarm.UI
             var rageActive = _rageWeapon != null && _rageWeapon.enabled && _rageWeapon.Level > 0;
             if (rageActive)
             {
-                _rageSlot.Count.text = _rageWeapon.StackCount.ToString();
+                if (_rageWeapon.StackCount != _shownRageStacks)
+                {
+                    _shownRageStacks = _rageWeapon.StackCount;
+                    _rageSlot.Count.text = _shownRageStacks.ToString();
+                }
+
                 Place(_rageSlot, index++);
             }
             else
@@ -82,39 +86,26 @@ namespace Swarm.UI
                 Hide(_rageSlot);
             }
 
-            var healActive = _healWeapon != null && _healWeapon.enabled && _healWeapon.Level > 0;
-            if (healActive)
-            {
-                _healSlot.Cooldown.fillAmount = 1f - _healWeapon.CooldownProgress;
-                Place(_healSlot, index++);
-            }
-            else
-            {
-                Hide(_healSlot);
-            }
-
-            var blessingActive = _blessingWeapon != null && _blessingWeapon.enabled && _blessingWeapon.Level > 0;
+            // 블레싱은 버프가 실제로 걸려 있는 동안에만 보여준다.
+            var blessingActive = _blessingWeapon != null && _blessingWeapon.enabled && _blessingWeapon.Level > 0
+                                 && _stats != null && _stats.IsTemporaryBuffActive;
             if (blessingActive)
             {
-                _blessingSlot.Cooldown.fillAmount = 1f - _blessingWeapon.CooldownProgress;
+                var duration = _blessingWeapon.BuffDuration;
+                _blessingSlot.Cooldown.fillAmount = duration > 0f
+                    ? 1f - Mathf.Clamp01(_stats.TemporaryBuffRemaining / duration)
+                    : 0f;
 
-                var buffOn = _stats != null && _stats.IsTemporaryBuffActive;
-                if (buffOn)
-                {
-                    var pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * buffPulseSpeed);
-                    _blessingSlot.Frame.color = Color.Lerp(Color.white, buffActiveTint, pulse);
-                    _blessingSlot.Rect.localScale = Vector3.one * (1f + 0.06f * pulse);
-                }
-                else
-                {
-                    _blessingSlot.Frame.color = Color.white;
-                    _blessingSlot.Rect.localScale = Vector3.one;
-                }
+                var pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * buffPulseSpeed);
+                _blessingSlot.Frame.color = Color.Lerp(Color.white, buffActiveTint, pulse);
+                _blessingSlot.Rect.localScale = Vector3.one * (1f + 0.06f * pulse);
 
                 Place(_blessingSlot, index);
             }
             else
             {
+                _blessingSlot.Frame.color = Color.white;
+                _blessingSlot.Rect.localScale = Vector3.one;
                 Hide(_blessingSlot);
             }
         }

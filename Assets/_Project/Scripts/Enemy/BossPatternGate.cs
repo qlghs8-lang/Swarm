@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Swarm.Enemy
@@ -16,12 +17,18 @@ namespace Swarm.Enemy
     /// </summary>
     public static class BossPatternGate
     {
+        // Reused across calls: the array-returning GetComponents allocated a fresh array on every
+        // query, and a pattern that is due but blocked asks again every frame until it is free.
+        // Nothing this method calls can re-enter it, so one shared buffer is safe.
+        private static readonly List<MonoBehaviour> BehaviourBuffer = new();
+
         public static bool IsAnyPatternCasting(GameObject boss, IBossPattern self)
         {
-            var patterns = boss.GetComponents<MonoBehaviour>();
-            foreach (var behaviour in patterns)
+            boss.GetComponents(BehaviourBuffer);
+
+            for (var i = 0; i < BehaviourBuffer.Count; i++)
             {
-                if (behaviour is not IBossPattern pattern || ReferenceEquals(pattern, self)) continue;
+                if (BehaviourBuffer[i] is not IBossPattern pattern || ReferenceEquals(pattern, self)) continue;
                 if (pattern.IsCasting) return true;
             }
 

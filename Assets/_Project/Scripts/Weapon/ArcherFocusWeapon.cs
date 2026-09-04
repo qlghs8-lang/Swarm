@@ -17,8 +17,13 @@ namespace Swarm.Weapon
         private PlayerStats _stats;
         private SpriteEffectPlayer _hitEffect;
 
+        // Allocated once instead of once per projectile per burst, the same way
+        // SpriteEffectPlayer caches its frame wait.
+        private WaitForSeconds _burstWait;
+
         private void Awake()
         {
+            _burstWait = new WaitForSeconds(burstInterval);
             _stats = GetComponent<PlayerStats>();
             _hitEffect = SpriteEffectPlayer.Create(
                 this, "FocusHitEffect (Temp)", effectMaterial, hitEffectFrames, hitEffectFrameDuration);
@@ -90,7 +95,7 @@ namespace Swarm.Weapon
                     projectile.Launch(direction, data.ProjectileSpeed, data.Range, damage, _pool, 0, DamageStatType.AttackPower, penetration, PlayHitEffect, isCritical);
                 }
 
-                if (i < count - 1) yield return new WaitForSeconds(burstInterval);
+                if (i < count - 1) yield return _burstWait;
             }
         }
 

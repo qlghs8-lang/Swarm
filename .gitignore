@@ -115,3 +115,6 @@ InitTestScene*.unity*
 
 # Claude Code local settings (per-machine permission choices, not shared)
 /.claude/settings.local.json
+
+# Wwise-MCP (local tool binary)
+/Tools/Wwise-MCP/

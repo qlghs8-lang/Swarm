@@ -9,8 +9,6 @@ namespace Swarm.Weapon
         // Reused across calls: the old OverlapCircleAll allocated a new array every hit tick.
         private readonly List<Collider2D> _hitBuffer = new();
 
-        private const float IndicatorDuration = 0.15f;
-        private const int FanSegments = 16;
         private const float SlashOriginOffset = 0.32f;
         // Calibrated so the slash art's outer edge lands exactly on the AoE radius.
         // SlashEffect.aseprite: 64px canvas, PPU 50, centre-pivot, art reaches 31px right of centre
@@ -20,7 +18,6 @@ namespace Swarm.Weapon
 
         [SerializeField] private AoeWeaponData data;
         [SerializeField] private float forwardAngleDegrees = 150f;
-        [SerializeField] private Color indicatorColor = new(1f, 0.3f, 0.3f, 0.6f);
         [SerializeField] private Sprite[] slashEffectFrames;
         [SerializeField] private float slashFrameDuration = 0.05f;
         [SerializeField] private Material effectMaterial;
@@ -28,57 +25,24 @@ namespace Swarm.Weapon
         [SerializeField, Range(0f, 2f)] private float knockbackScale = 1f;
 
         private float _timer;
-        private float _indicatorTimer;
         private PlayerStats _stats;
-        private Transform _indicator;
-        private Mesh _indicatorMesh;
         private SpriteEffectPlayer _slashEffect;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
-            CreateIndicator();
             _slashEffect = SpriteEffectPlayer.Create(
                 this, "SlashEffect (Temp)", effectMaterial, slashEffectFrames, slashFrameDuration);
         }
 
-        private void CreateIndicator()
-        {
-            var indicatorObject = new GameObject("ForwardAttackIndicator (Temp)");
-            var meshFilter = indicatorObject.AddComponent<MeshFilter>();
-            var meshRenderer = indicatorObject.AddComponent<MeshRenderer>();
-            meshRenderer.material = new Material(Shader.Find("Sprites/Default")) { color = indicatorColor };
-            meshRenderer.sortingLayerName = SortingLayers.EFFECT;
-            meshRenderer.sortingOrder = 0;
-
-            _indicatorMesh = new Mesh();
-            meshFilter.mesh = _indicatorMesh;
-            _indicator = indicatorObject.transform;
-            indicatorObject.SetActive(false);
-        }
-
         private void OnDisable()
         {
-            if (_indicator != null)
-            {
-                _indicator.gameObject.SetActive(false);
-            }
-
             _slashEffect?.Hide();
         }
 
         private void Update()
         {
             if (data == null) return;
-
-            if (_indicatorTimer > 0f)
-            {
-                _indicatorTimer -= Time.deltaTime;
-                if (_indicatorTimer <= 0f)
-                {
-                    _indicator.gameObject.SetActive(false);
-                }
-            }
 
             var cooldownMultiplier = CooldownMultiplier * (1f - (_stats != null ? _stats.CooldownReduction : 0f));
             var effectiveInterval = Mathf.Max(0.1f, data.AttackInterval * cooldownMultiplier);
@@ -129,43 +93,6 @@ namespace Swarm.Weapon
             var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg;
             var scale = radius / SlashEffectReferenceRadius;
             _slashEffect?.Play(origin + facing * (SlashOriginOffset * scale), angle, scale);
-        }
-
-        private void ShowIndicator(Vector2 origin, Vector2 facing, float radius)
-        {
-            var angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg;
-            BuildFanMesh(radius);
-            _indicator.position = origin;
-            _indicator.rotation = Quaternion.Euler(0f, 0f, angle);
-            _indicator.gameObject.SetActive(true);
-            _indicatorTimer = IndicatorDuration;
-        }
-
-        private void BuildFanMesh(float radius)
-        {
-            var halfAngleRad = forwardAngleDegrees * 0.5f * Mathf.Deg2Rad;
-            var vertices = new Vector3[FanSegments + 2];
-            var triangles = new int[FanSegments * 3];
-
-            vertices[0] = Vector3.zero;
-            for (var i = 0; i <= FanSegments; i++)
-            {
-                var t = (float)i / FanSegments;
-                var segmentAngle = Mathf.Lerp(-halfAngleRad, halfAngleRad, t);
-                vertices[i + 1] = new Vector3(Mathf.Cos(segmentAngle), Mathf.Sin(segmentAngle), 0f) * radius;
-            }
-
-            for (var i = 0; i < FanSegments; i++)
-            {
-                triangles[i * 3] = 0;
-                triangles[i * 3 + 1] = i + 1;
-                triangles[i * 3 + 2] = i + 2;
-            }
-
-            _indicatorMesh.Clear();
-            _indicatorMesh.vertices = vertices;
-            _indicatorMesh.triangles = triangles;
-            _indicatorMesh.RecalculateBounds();
         }
     }
 }

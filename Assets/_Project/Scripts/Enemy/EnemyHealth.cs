@@ -217,6 +217,8 @@ namespace Swarm.Enemy
         private void SpawnDamageNumber(int amount, bool isCritical)
         {
             if (damageNumberPrefab == null) return;
+            // 설정에서 끈 경우. 화면에 적이 수십 마리 깔릴 때 숫자를 지우면 상황이 훨씬 잘 보인다.
+            if (!Swarm.Settings.GameSettings.ShowDamageNumbers) return;
 
             var jitter = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.1f, 0.1f), 0f);
             var instance = SharedObjectPool.Get(damageNumberPrefab, transform.position + Vector3.up * 0.5f + jitter, Quaternion.identity);
@@ -230,6 +232,8 @@ namespace Swarm.Enemy
         private void Die()
         {
             _isDead = true;
+
+            Swarm.Game.RunStats.AddKill();
 
             if (goldReward > 0) Swarm.Game.GoldWallet.Add(goldReward);
 

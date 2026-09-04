@@ -31,6 +31,7 @@ namespace Swarm.Weapon
 
         private float _elapsed;
         private SpriteRenderer _spriteRenderer;
+        private RuntimeObjectPool _pool;
 
         private void Awake()
         {
@@ -47,6 +48,9 @@ namespace Swarm.Weapon
             _speedMultiplier = speedMultiplier;
             _penetration = penetration;
             _frames = frames;
+            // Pooled: a reused cloud would otherwise start at the previous life's elapsed time
+            // and expire on its first frame.
+            _elapsed = 0f;
 
             transform.localScale = new Vector3(radius * VisualScaleMultiplier, radius * VisualScaleMultiplier, 1f);
 
@@ -59,6 +63,12 @@ namespace Swarm.Weapon
             }
         }
 
+        /// <summary>Set by the spawning weapon so the cloud is recycled instead of destroyed.</summary>
+        public void SetPool(RuntimeObjectPool pool)
+        {
+            _pool = pool;
+        }
+
         private bool HasFullAnimation => _frames != null && _frames.Length >= IntroFrameCount + OutroFrameCount;
 
         private void Update()
@@ -66,7 +76,8 @@ namespace Swarm.Weapon
             _elapsed += Time.deltaTime;
             if (_elapsed >= _duration)
             {
-                Destroy(gameObject);
+                if (_pool != null) _pool.Release(gameObject);
+                else Destroy(gameObject);
                 return;
             }
 

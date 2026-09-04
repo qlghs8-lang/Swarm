@@ -69,6 +69,10 @@ namespace Swarm.Enemy
         // Which way this enemy shoves a blocker it hits dead-on. Fixed per instance so it commits
         // to one side instead of jittering left-right against the same target every step.
         private float _shoveSide;
+
+        /// <summary>생성될 때마다 증가. <see cref="_shoveSide"/>를 좌우 번갈아 나눠 주는 용도뿐이라
+        /// 넘쳐도 상관없다.</summary>
+        private static int _shoveSideCounter;
         private float _speedScale = 1f;
         private float _accelerationScale = 1f;
         private float _aimOffsetRadians;
@@ -100,7 +104,11 @@ namespace Swarm.Enemy
             _rigidbody = GetComponent<Rigidbody2D>();
             TryGetComponent(out _statusImmunity);
             _baseMass = _rigidbody.mass;
-            _shoveSide = (GetInstanceID() & 1) == 0 ? 1f : -1f;
+            // 적마다 밀려나는 방향을 좌우로 갈라 둔다. 값 자체에는 의미가 없고 이웃끼리 다르기만
+            // 하면 되므로, 생성 순서대로 번갈아 준다 — 인스턴스 ID를 쓰던 자리인데 그 API가
+            // (그리고 그 후속인 EntityId→int 변환까지) 전부 폐기 예정이라 유니티 API를 아예 뺐다.
+            // 덤으로 ID 해시보다 갈림이 고르다.
+            _shoveSide = (_shoveSideCounter++ & 1) == 0 ? 1f : -1f;
 
             _colliders = GetComponents<Collider2D>();
             _colliderExcludeLayers = new int[_colliders.Length];

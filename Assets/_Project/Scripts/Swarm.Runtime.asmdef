@@ -3,6 +3,7 @@
     "rootNamespace": "Swarm",
     "references": [
         "Unity.InputSystem",
+        "Unity.Cinemachine",
         "UnityEngine.UI"
     ],
     "includePlatforms": [],

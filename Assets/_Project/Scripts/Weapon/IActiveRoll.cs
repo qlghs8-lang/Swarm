@@ -4,6 +4,7 @@ namespace Swarm.Weapon
     {
         int Level { get; }
         float CooldownProgress01 { get; }
+        float CooldownRemaining { get; }
         void TryRoll();
     }
 }

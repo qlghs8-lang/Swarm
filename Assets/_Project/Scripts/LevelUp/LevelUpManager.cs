@@ -72,6 +72,12 @@ namespace Swarm.LevelUp
 
         private void HandleLevelUp(int newLevel)
         {
+            // The ending is already playing. The clear sweep hands over every orb still on the
+            // ground at once, so a level up here is routine — and a card panel would both cover
+            // the result screen and drop timeScale to zero underneath the sequence driving it.
+            // The level still counts, it just does not get spent.
+            if (RunStats.RunEnded) return;
+
             var candidates = BuildCandidates();
             var picks = PickThree(candidates);
 
@@ -174,11 +180,11 @@ namespace Swarm.LevelUp
 
             while (result.Count < 3)
             {
-                if (pool.Count == 0)
-                {
-                    if (remaining.Count == 0) break;
-                    for (var j = 0; j < remaining.Count; j++) pool.Add(j);
-                }
+                // Exhausted: stop instead of refilling the pool with indices already drawn.
+                // Refilling handed the same candidate out twice, so a level up could show the
+                // identical card in two slots — and it also made the caller's gold filler
+                // unreachable, since PickThree always came back with three entries.
+                if (pool.Count == 0) break;
 
                 var pickedIndex = PickWeightedIndex(remaining, pool);
                 result.Add(remaining[pickedIndex]);

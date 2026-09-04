@@ -1,14 +1,12 @@
-# Swarm 아트 조달 계획
+# Swarm 아트 제작 계획
 
-무료 에셋 스토어 대신 직접 생성하는 파이프라인을 기본 경로로 삼는다. 카테고리에 따라 세 갈래로 나뉜다:
+**아트는 전부 직접 만든다. 무료 에셋 스토어를 비롯한 외부 에셋은 쓰지 않는다.** 제작 파이프라인은 카테고리에 따라 세 갈래로 나뉜다:
 
 - **플레이어 캐릭터 / 적**: PixelLab로 생성 → Aseprite 후가공 (2장 참고)
 - **무기 이펙트**: GPT·Gemini로 레퍼런스 이미지 생성 → Aseprite에서 선 정리 후가공 (3장 참고)
 - **UI / 타일 / 픽업 오브젝트**: aseprite-mcp로 Aseprite를 직접 조작해 생성 (4장 참고)
 
 세 번째 갈래는 앞의 둘과 성격이 다르다. 캐릭터와 이펙트는 "무엇이 그려져 있는가"가 핵심이라 생성 AI의 그림이 출발점이 되지만, UI 프레임·타일·픽업은 **규칙이 곧 그림**이다 — 9-slice 보더가 정확히 6px이어야 하고, 타일은 이음매가 픽셀 단위로 맞아야 하고, 픽업은 실루엣으로 구분돼야 한다. 이런 건 레퍼런스를 정리하는 것보다 도형·팔레트·좌표를 직접 찍는 쪽이 빠르고 정확하다.
-
-파이프라인이 감당 안 되거나 시간이 급한 카테고리는 언제든 무료 에셋으로 되돌아갈 수 있게 열어둔다.
 
 ---
 
@@ -17,20 +15,18 @@
 | 분류 | 상태 | 비고 |
 |------|------|------|
 | 플레이어 — 전사 | ✅ 완료 | Idle/Walk + Animator + `CharacterDefinition` 연결 완료 (`Warrior.aseprite`, `Warrior.controller`) |
-| 플레이어 — 궁수 | ✅ 완료 | Idle/Walk/Roll + Animator + `CharacterDefinition` 연결 완료 (`Archer.aseprite`, `Archer.controller`). Roll은 `ArcherRollWeapon.StartRoll()`에서 `Animator.SetTrigger("Roll")` 호출로 연동 |
+| 플레이어 — 궁수 | ✅ 완료 | Idle/Walk/Roll(인게임 표기는 "대시") + Animator + `CharacterDefinition` 연결 완료 (`Archer.aseprite`, `Archer.controller`). `ArcherRollWeapon.StartRoll()`에서 `Animator.SetTrigger("Roll")` 호출로 연동 |
 | 플레이어 — 마법사 | ✅ 완료 | Idle/Walk + Animator + `CharacterDefinition` 연결 완료 (`Mage.aseprite`, `Mage.controller`). 로브가 발을 가려 다리 스트라이드 대신 옷자락 스윙으로 이동감 표현 |
 | 적 3종 (기본/빠름/탱커) | 🟡 진행 중 | 기본형(`SwarmGrunt`) PixelLab 생성 + Aseprite 팔레트 스왑으로 빠름/탱커 파생 완료. Animator/`Enemy_*` 프리팹 연결 완료. 크기 차등은 기존 프리팹 Transform Scale 그대로 사용 |
 | 무기 이펙트 (근접/투사체/범위) | ✅ 완료 | GPT·Gemini 레퍼런스 + Aseprite 선 정리(3장)로 전사/궁수/마법사 무기 전부 제작·적용 완료. 상세 내역은 6장 참고 |
 | UI (버튼·패널·슬롯 프레임, 바) | ✅ 완료 | aseprite-mcp 생성. 9-slice 버튼 5종 + 패널/슬롯 프레임 3종, 씬에 배선 완료 (4장 참고) |
 | 타일맵/배경 (아레나) | ✅ 완료 | aseprite-mcp 생성. 잔디 4종 + 장식 4종 + 돌담 3종 + 마모 띠 3종 + 중앙 문양. `ArenaBuilder`가 런타임 배치 |
 | 드랍 픽업 (경험치·골드·자석·힐팩) | ✅ 완료 | aseprite-mcp 생성. 경험치 3단계 + 골드 2종 + 자석 + 힐팩 전부 배선 완료 |
-| 파괴 가능 오브젝트 (항아리) | ✅ 완료 | 레퍼런스 이미지 → 48×48/PPU 32로 다운스케일·팔레트 정리 후 `Pot.aseprite`(Idle 1 + Break 5). `PotField`가 런타임 배치·리스폰, `BreakablePot`이 드랍 |
+| 파괴 가능 오브젝트 (항아리) | ✅ 완료 | 레퍼런스 이미지 → 48×48로 다운스케일·팔레트 정리 후 `Pot.aseprite`(Idle 1 + Break 5). **PPU 64**(항아리 높이 약 0.47유닛) — 크기를 절반으로 줄일 때 24px로 다시 그리면 뚜껑·손잡이·문양이 전부 사라져서, 아트는 두고 임포트 설정만 바꿈. `PotField`가 런타임 배치·리스폰, `BreakablePot`이 드랍 |
 | 보스 | ✅ 완료 | PixelLab 생성 + Aseprite 후가공(`Boss.aseprite`), Walk Animator(`Boss.controller`) + `Enemy_Boss` 프리팹 배선 완료 |
 | 보스 패턴 이펙트 (슬램·운석) | ✅ 완료 | `bossslam.aseprite`/`bossrock.aseprite` + 낙하/착탄 프리팹 3종. 경고 원(`BossTelegraph`) 반경과 이펙트 폭을 맞춰 둠 |
 | 타이틀 배경 | ✅ 완료 | Aseprite 스크립트(`Art_src/Title/gen_title.lua`)로 생성, `Title.unity`에 배선 |
-| 보스 체력바 / 버프 아이콘 | ✅ 완료 | aseprite-mcp. 체력 구간 4단계(`BossBar_State0~3`), 아이콘 3종(레이지/힐/블레싱) |
-
-미정 카테고리는 무료 에셋으로 임시 대체해도 되지만, 기본 방향은 "가능하면 직접 생성"으로 잡는다.
+| 보스 체력바 / 버프 아이콘 | ✅ 완료 | 체력바는 **프레임(`BossBar_Frame` 1400×180) + 채움(`BossBar_Fill` 1094×69) 2레이어**. `BossHP_Bar`(프레임, Simple) 밑에 자식 `BossHP_Fill`을 두고 앵커(x 0.1107~0.8921 / y 0.1944~0.5778)로 프레임 안쪽 홈에 정확히 맞춘 뒤 `Image.type = Filled(Horizontal, Origin Left)`로 `fillAmount = 체력비율`을 그대로 넣는다. **함정**: 투명 여백이 있는 스프라이트를 쓰면 Unity가 `fillAmount`를 여백 제외 영역 기준으로 적용하므로, 스크립트에서 또 보정하면 이중 보정이 되어 100%에서도 89%처럼 보인다 — 텍스처를 채움 영역만큼 잘라두고 보정값은 0/1로 둘 것. 구버전 `BossBar_State0~3`는 구간마다 채움이 그림에 박혀 있어 4단계로 끊기고 표시값도 어긋나서 폐기(파일은 남아있음). 아이콘 3종(레이지/힐/블레싱) |
 
 ---
 
@@ -39,7 +35,7 @@
 1. PixelLab MCP `create_character`로 초안 생성 — **레퍼런스 이미지 없이 텍스트 설명만, `mode="standard"`, `view="low top-down"`** (레퍼런스 이미지를 쓰면 원본 앵글 편향이 그대로 옮아붙어 탑다운이 아닌 측면/카드아트 구도가 나옴)
 2. Idle: `breathing-idle` 템플릿으로 우선 시도 → 무기/지팡이 같은 소품이 일부 프레임에서 사라지면 `mode="v3"` 커스텀으로 "계속 쥐고 있음"을 명시해 재생성
 3. Walk: 템플릿 모드(`walking-4-frames` 등)는 방향이 뒤집혀 뒷모습이 섞이는 버그 위험이 있음 → 처음부터 `mode="v3"` 커스텀으로 "항상 정면 유지"를 명시해서 생성
-4. (필요시) 액티브 스킬 애니메이션(예: 구르기)도 `mode="v3"` 커스텀으로 생성 — 동작 묘사를 구체적으로(무릎 굽힘, 상체 기울기 등) 써야 원하는 실루엣이 나옴
+4. (필요시) 액티브 스킬 애니메이션(예: 대시)도 `mode="v3"` 커스텀으로 생성 — 동작 묘사를 구체적으로(무릎 굽힘, 상체 기울기 등) 써야 원하는 실루엣이 나옴
 5. Aseprite에서 태그별(`Idle`, `Walk`, `Roll` 등)로 프레임 정리 → `.aseprite`로 저장 (Aseprite CLI(`-b --script`)로 스크립트 조립 가능)
 6. Unity `com.unity.2d.aseprite` 임포터로 임포트, `Generate Animation Clips` 체크(기본값), **Pixels Per Unit을 50으로 수정** (Pivot Alignment는 최초 1회 Bottom Center로 설정해두면 이후 신규 임포트에 프로젝트 기본값으로 자동 상속됨)
 7. 전용 에디터 툴(`Assets/_Project/Scripts/Editor/<Character>AnimatorSetup.cs` 패턴)로 AnimatorController 생성 + Player의 두 씬(Game.unity, TestStage.unity)에 임시 연결해서 눈으로 확인
@@ -140,11 +136,7 @@
 
 - aseprite-mcp 생성물은 전부 자체 제작이라 라이선스 이슈가 없다
 - PixelLab 생성물은 제3자 에셋 라이선스 이슈가 없지만, [PixelLab ToS](https://pixellab.ai/termsofservice) 상 상업적 이용(포트폴리오 공개 포함) 조건은 확인해둘 것
-- 무료 에셋을 보조로 쓰게 되는 카테고리에 한해서만 아래 적용:
-  - [ ] 상업적 이용(포트폴리오 공개, 취업 지원용 시연) 허용 여부
-  - [ ] 출처 표기(attribution) 의무 여부 → 있다면 크레딧 화면/README에 기재
-  - [ ] 재배포·수정 제한 여부
-  - [ ] 라이선스 원문 또는 링크를 프로젝트 내 기록으로 남겨두기
+- 외부 에셋(무료 에셋 스토어 등)은 사용하지 않으므로 제3자 라이선스 검토 항목은 없다
 
 ---
 
@@ -158,7 +150,7 @@
 | 플레이어 캐릭터 3종 (외형 전환 포함 실사용 가능) | ✅ 완료 |
 | 적 기본형(SwarmGrunt) + 팔레트 스왑 빠름/탱커 + Animator 연결 | ✅ 완료 |
 | 전사 — 기본무기(전방 베기)/콤보어택(베기·찌르기·내려찍기)/흡혈·레이지(패시브)/공전검·소드체이싱 | ✅ 완료 — 전부 3장 파이프라인으로 제작. 원샷 이펙트에 Additive 블렌드(`SpriteAdditive.mat`) 적용 |
-| 궁수 — 화살(활쏘기)/화살비(볼리)/집중(포커스)/난사(스프레이)/맹독 구르기(독 장판) | ✅ 완료 — 화살·화살비·집중은 명중 히트 이펙트(`arrow_hit`) 공유 + Additive 적용, 난사는 발사 빈도가 높아 히트 이펙트 의도적으로 생략. 맹독 구르기 독 장판은 유일한 지속형(looping) 이펙트라 알파 블렌드 유지, `PoisonGasCloud.cs`가 인트로→Peak 유지→아웃트로 구조로 재생 |
+| 궁수 — 화살(활쏘기)/화살비(볼리)/집중(포커스)/난사(스프레이)/맹독 대시(독 장판) | ✅ 완료 — 화살·화살비·집중은 명중 히트 이펙트(`arrow_hit`) 공유 + Additive 적용, 난사는 발사 빈도가 높아 히트 이펙트 의도적으로 생략. 맹독 대시 독 장판은 유일한 지속형(looping) 이펙트라 알파 블렌드 유지, `PoisonGasCloud.cs`가 인트로→Peak 유지→아웃트로 구조로 재생 |
 | 마법사 — 낙뢰(전체 즉발 스트라이크)/체인 라이트닝(낙뢰 진화, 연쇄 투사체)/화염구/치유/축복(치유 진화) | ✅ 완료 — 낙뢰·화염구는 Additive 적용, 치유·축복은 알파 블렌드 유지 |
 | UI — 버튼 5종(기본/호버/눌림/비활성/강조) + 패널·슬롯·선택 프레임 | ✅ 완료 — aseprite-mcp. 9-slice 6px, 씬 3개 + `ShopSlot` 프리팹에 배선. 버튼은 SpriteSwap 전환, 레벨업 카드 호버와 캐릭터 선택 슬롯은 `Slot_Selected` 사용 |
 | 아레나 — 잔디 4종/장식 4종/돌담 3종/마모 띠 3종/중앙 문양 | ✅ 완료 — aseprite-mcp. `ArenaBuilder`가 시드 고정으로 런타임 배치(바닥은 Tilemap, 돌담 440개는 SpriteRenderer) |
@@ -168,6 +160,4 @@
 | 보스 — 슬램/운석 패턴 이펙트 | ✅ 완료 — 3장 파이프라인. 슬램 착탄, 운석 낙하·착탄 프리팹 3종을 `BossSlamSetup.cs`/`BossRockSetup.cs`로 배선. 경고 원과 이펙트 폭을 같은 값으로 유지 |
 | UI — 보스 체력바 4단계 + 버프 아이콘 3종(레이지/힐/블레싱) | ✅ 완료 — aseprite-mcp. 체력바는 fill이 아니라 구간별 스프라이트 교체, 버프 슬롯은 `BuffIconBarUI`가 런타임 생성 |
 | 타이틀 배경 | ✅ 완료 — `gen_title.lua`로 생성, `Title.unity` 배선 |
-| 남은 것 | 사운드(BGM 음원·효과음) |
-
-시간이 급해지면 미정 카테고리는 무료 에셋으로 전환해 전체 루프(이동→전투→레벨업→웨이브→결과 화면) 완성을 우선한다.
+| 남은 것 | 사운드(BGM 음원·효과음) — 아트는 전 카테고리 완료 |

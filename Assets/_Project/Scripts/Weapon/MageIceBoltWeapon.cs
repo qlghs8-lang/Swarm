@@ -29,10 +29,12 @@ namespace Swarm.Weapon
         private float _timer;
         private PlayerStats _stats;
         private SpriteEffectPlayer _hitEffect;
+        private RuntimeObjectPool _boltPool;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
+            _boltPool = new RuntimeObjectPool(CreateBoltObject);
             _hitEffect = SpriteEffectPlayer.Create(
                 this, "LightningHitEffect (Temp)", null, hitEffectFrames, hitEffectFrameDuration,
                 initialScale: hitEffectScale);
@@ -82,21 +84,36 @@ namespace Swarm.Weapon
             return true;
         }
 
-        private void SpawnBolt(Vector2 origin, Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps, bool isCritical)
+        // The bare object only. Everything that differs per shot is re-applied in SpawnBolt, so
+        // a recycled bolt is set up exactly like a fresh one.
+        private GameObject CreateBoltObject()
         {
             var boltObject = new GameObject("IceBolt (Temp)");
-            boltObject.transform.position = origin;
-            boltObject.transform.localScale = Vector3.one * visualScale;
 
             var spriteRenderer = boltObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
             spriteRenderer.sortingOrder = 0;
 
-            var bolt = boltObject.AddComponent<ChainLightningBolt>();
+            boltObject.AddComponent<ChainLightningBolt>();
+            return boltObject;
+        }
+
+        private void SpawnBolt(Vector2 origin, Transform target, int damage, DamageStatType damageType, float penetration, int maxJumps, bool isCritical)
+        {
+            var boltObject = _boltPool.Get();
+            boltObject.transform.position = origin;
+            boltObject.transform.localScale = Vector3.one * visualScale;
+            boltObject.transform.rotation = Quaternion.identity;
+
+            if (!boltObject.TryGetComponent<ChainLightningBolt>(out var bolt)) return;
+            if (!boltObject.TryGetComponent<SpriteRenderer>(out var spriteRenderer)) return;
+
+            bolt.SetPool(_boltPool);
             bolt.Launch(target, damage, data.ProjectileSpeed, maxJumps, chainRange, slowMultiplier, slowDuration, penetration, damageType, PlayHitEffect, isCritical);
 
             if (travelFrames != null && travelFrames.Length > 0)
             {
+                spriteRenderer.color = Color.white;
                 spriteRenderer.sprite = travelFrames[0];
                 bolt.SetTravelAnimation(spriteRenderer, travelFrames, travelFrameDuration);
             }

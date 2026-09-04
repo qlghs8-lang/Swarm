@@ -20,6 +20,8 @@ namespace Swarm.Weapon
         private float _penetration;
         private System.Action<Vector2> _onImpact;
 
+        private RuntimeObjectPool _pool;
+
         private SpriteRenderer _spriteRenderer;
         private Sprite[] _travelFrames;
         private float _travelFrameDuration;
@@ -37,9 +39,18 @@ namespace Swarm.Weapon
             _penetration = penetration;
             _onImpact = onImpact;
             _isCritical = isCritical;
+            // Pooled: the previous fall left the animation clock at the end of the strip, which
+            // would show the reused meteor's last frame for its whole descent.
+            _animTimer = 0f;
 
             var offsetDirection = new Vector2(-1f, 1f).normalized;
             transform.position = targetPosition + offsetDirection * fallOffset;
+        }
+
+        /// <summary>Set by the spawning weapon so the meteor is recycled instead of destroyed.</summary>
+        public void SetPool(RuntimeObjectPool pool)
+        {
+            _pool = pool;
         }
 
         public void SetTravelAnimation(SpriteRenderer spriteRenderer, Sprite[] travelFrames, float travelFrameDuration)
@@ -88,7 +99,9 @@ namespace Swarm.Weapon
             }
 
             _onImpact?.Invoke(_targetPosition);
-            Destroy(gameObject);
+
+            if (_pool != null) _pool.Release(gameObject);
+            else Destroy(gameObject);
         }
     }
 }

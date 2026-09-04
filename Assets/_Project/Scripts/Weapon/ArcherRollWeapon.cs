@@ -23,6 +23,7 @@ namespace Swarm.Weapon
         private Animator _animator;
 
         public float CooldownProgress01 { get; private set; } = 1f;
+        public float CooldownRemaining { get; private set; }
 
         private void Awake()
         {
@@ -42,6 +43,7 @@ namespace Swarm.Weapon
 
             if (_timer < effectiveCooldown) _timer += Time.deltaTime;
             CooldownProgress01 = Mathf.Clamp01(_timer / effectiveCooldown);
+            CooldownRemaining = Mathf.Max(0f, effectiveCooldown - _timer);
 
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {

@@ -34,10 +34,14 @@ namespace Swarm.Weapon
         private float _timer;
         private PlayerStats _stats;
         private SpriteEffectPlayer _impactEffect;
+        private RuntimeObjectPool _meteorPool;
+        private RuntimeObjectPool _firePatchPool;
 
         private void Awake()
         {
             _stats = GetComponent<PlayerStats>();
+            _meteorPool = new RuntimeObjectPool(CreateMeteorObject);
+            _firePatchPool = new RuntimeObjectPool(CreateFirePatchObject);
             _impactEffect = SpriteEffectPlayer.Create(
                 this, "MeteorImpactEffect (Temp)", effectMaterial, meteorImpactEffectFrames, meteorImpactEffectFrameDuration,
                 initialScale: meteorImpactEffectScale);
@@ -94,18 +98,44 @@ namespace Swarm.Weapon
             return true;
         }
 
-        private void SpawnMeteor(Vector2 targetPosition, float impactRadius, int impactDamage, DamageStatType damageType,
-            float penetration, float patchRadius, int burnTick, bool isCritical)
+        // The bare objects only. Everything that differs per cast is re-applied on spawn, so a
+        // recycled meteor or patch is set up exactly like a fresh one.
+        private GameObject CreateMeteorObject()
         {
             var meteorObject = new GameObject("Meteor (Temp)");
-            meteorObject.transform.localScale = Vector3.one * meteorVisualScale;
 
             var spriteRenderer = meteorObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sortingLayerName = SortingLayers.EFFECT;
             spriteRenderer.sortingOrder = 1;
             if (effectMaterial != null) spriteRenderer.material = effectMaterial;
 
-            var meteor = meteorObject.AddComponent<Meteor>();
+            meteorObject.AddComponent<Meteor>();
+            return meteorObject;
+        }
+
+        private GameObject CreateFirePatchObject()
+        {
+            var patchObject = new GameObject("FirePatch (Temp)");
+
+            var spriteRenderer = patchObject.AddComponent<SpriteRenderer>();
+            // The patch is scorched ground: it belongs under whatever walks over it.
+            spriteRenderer.sortingLayerName = SortingLayers.DECAL;
+            spriteRenderer.sortingOrder = 2;
+
+            patchObject.AddComponent<FirePatch>();
+            return patchObject;
+        }
+
+        private void SpawnMeteor(Vector2 targetPosition, float impactRadius, int impactDamage, DamageStatType damageType,
+            float penetration, float patchRadius, int burnTick, bool isCritical)
+        {
+            var meteorObject = _meteorPool.Get();
+            meteorObject.transform.localScale = Vector3.one * meteorVisualScale;
+
+            if (!meteorObject.TryGetComponent<Meteor>(out var meteor)) return;
+            if (!meteorObject.TryGetComponent<SpriteRenderer>(out var spriteRenderer)) return;
+
+            meteor.SetPool(_meteorPool);
             meteor.Launch(targetPosition, meteorFallOffset, meteorFallSpeed, impactRadius, impactDamage, damageType, penetration,
                 impactPosition =>
                 {
@@ -115,6 +145,7 @@ namespace Swarm.Weapon
 
             if (meteorTravelFrames != null && meteorTravelFrames.Length > 0)
             {
+                spriteRenderer.color = Color.white;
                 spriteRenderer.sprite = meteorTravelFrames[0];
                 meteor.SetTravelAnimation(spriteRenderer, meteorTravelFrames, meteorTravelFrameDuration);
             }
@@ -132,15 +163,13 @@ namespace Swarm.Weapon
 
         private void SpawnFirePatch(Vector2 position, float radius, int burnTick, DamageStatType damageType, float penetration)
         {
-            var patchObject = new GameObject("FirePatch (Temp)");
+            var patchObject = _firePatchPool.Get();
             patchObject.transform.position = position;
 
-            var spriteRenderer = patchObject.AddComponent<SpriteRenderer>();
-            // The patch is scorched ground: it belongs under whatever walks over it.
-            spriteRenderer.sortingLayerName = SortingLayers.DECAL;
-            spriteRenderer.sortingOrder = 2;
+            if (!patchObject.TryGetComponent<FirePatch>(out var patch)) return;
+            if (!patchObject.TryGetComponent<SpriteRenderer>(out var spriteRenderer)) return;
 
-            var patch = patchObject.AddComponent<FirePatch>();
+            patch.SetPool(_firePatchPool);
 
             if (firePatchFrames != null && firePatchFrames.Length > 0)
             {

@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using Swarm.Enemy;
 using Swarm.Player;
 using Swarm.Spawner;
@@ -37,9 +38,21 @@ namespace Swarm.Game
         private PlayerHealth _playerHealth;
         private EnemyHealth _boss;
         private bool _warnedOfTimeLimit;
+        private ResultSequence _resultSequence;
+        private int _goldAtRunStart;
+
+        // The timer only ever shows whole seconds, but it was rebuilt from a fresh interpolated
+        // string on every frame — sixty throwaway allocations a second for one visible change.
+        private int _lastShownSecond = -1;
+        private bool _lastShownWasCountdown;
 
         private void Awake()
         {
+            // Added rather than wired: the sequence needs no references of its own, so a scene
+            // that predates it still gets the presentation without being touched.
+            _resultSequence = GetComponent<ResultSequence>();
+            if (_resultSequence == null) _resultSequence = gameObject.AddComponent<ResultSequence>();
+
             var player = GameObject.FindGameObjectWithTag("Player");
             if (player != null && player.TryGetComponent(out _playerHealth))
             {
@@ -55,6 +68,12 @@ namespace Swarm.Game
 
         private void Start()
         {
+            RunStats.Reset();
+            // The wallet is a lifetime total that persists across runs, so what this run earned is
+            // only knowable as a difference against where it started.
+            _goldAtRunStart = GoldWallet.Current;
+            BackgroundMusic.SetPitch(1f);
+
             var player = GameObject.FindGameObjectWithTag("Player");
             if (player == null) return;
 
@@ -99,7 +118,7 @@ namespace Swarm.Game
 
             if (timeLimit <= 0f)
             {
-                timerText.text = FormatTime(_elapsedTime);
+                SetTimerText(_elapsedTime, false);
                 return;
             }
 
@@ -109,7 +128,8 @@ namespace Swarm.Game
             // out of, not the one they have survived. Before that the limit is far enough away to
             // be noise, and counting down from 15:00 for ten minutes would just read as pressure
             // that isn't there yet.
-            timerText.text = _boss != null ? FormatTime(remaining) : FormatTime(_elapsedTime);
+            if (_boss != null) SetTimerText(remaining, true);
+            else SetTimerText(_elapsedTime, false);
 
             if (!_warnedOfTimeLimit && timeLimitWarning > 0f && remaining <= timeLimitWarning)
             {
@@ -140,22 +160,35 @@ namespace Swarm.Game
 
         private void HandleGameOver()
         {
-            ShowResult("GAME OVER", 0);
+            ShowResult(false, 0);
         }
 
         private void HandleClear()
         {
             // EnemyHealth.Die() has already credited the wallet; this only reports it. Destroy is
             // deferred to the end of the frame, so the boss reference is still readable here.
-            ShowResult("CLEAR!", _boss != null ? _boss.GoldReward : 0);
+            ShowResult(true, _boss != null ? _boss.GoldReward : 0);
         }
 
-        private void ShowResult(string title, int goldBonus)
+        private void ShowResult(bool cleared, int goldBonus)
         {
             if (_isGameEnded) return;
             _isGameEnded = true;
+            RunStats.MarkRunEnded();
 
-            resultTitleText.text = title;
+            // The clear sequence hands time back so the arena can empty out on screen, which also
+            // means the spawner would keep feeding it. Nothing should arrive after the run ends.
+            if (enemySpawner != null) enemySpawner.enabled = false;
+
+            if (_resultSequence != null)
+            {
+                _resultSequence.Play(cleared, _elapsedTime, _goldAtRunStart, goldBonus,
+                                     resultPanel, resultTitleText, resultTimeText);
+                return;
+            }
+
+            // Fallback for a scene where the sequence could not be attached: the old instant panel.
+            resultTitleText.text = cleared ? "CLEAR!" : "GAME OVER";
             resultTimeText.text = goldBonus > 0
                 ? $"생존 시간: {FormatTime(_elapsedTime)}\n클리어 보너스  +{goldBonus} G"
                 : $"생존 시간: {FormatTime(_elapsedTime)}";
@@ -165,14 +198,39 @@ namespace Swarm.Game
 
         public void Restart()
         {
-            Time.timeScale = 1f;
+            EndSequence();
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         public void GoToTitle()
         {
-            Time.timeScale = 1f;
+            EndSequence();
             SceneManager.LoadScene(titleSceneName);
+        }
+
+        /// <summary>
+        /// Hands back everything the sequence borrowed. fixedDeltaTime, the BGM pitch and the
+        /// camera's brain all outlive the scene load, so leaving any of them bent would carry the
+        /// death screen's slow motion into the next run.
+        /// </summary>
+        private void EndSequence()
+        {
+            Time.timeScale = 1f;
+            if (_resultSequence != null) _resultSequence.Cleanup();
+        }
+
+        /// <summary>Writes the clock only when the displayed second (or the mode it is counting
+        /// in) actually changes.</summary>
+        private void SetTimerText(float seconds, bool isCountdown)
+        {
+            if (timerText == null) return;
+
+            var second = Mathf.FloorToInt(Mathf.Max(0f, seconds));
+            if (second == _lastShownSecond && isCountdown == _lastShownWasCountdown) return;
+
+            _lastShownSecond = second;
+            _lastShownWasCountdown = isCountdown;
+            timerText.text = FormatTime(seconds);
         }
 
         private static string FormatTime(float seconds)

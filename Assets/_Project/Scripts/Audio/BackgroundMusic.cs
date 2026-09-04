@@ -36,6 +36,16 @@ namespace Swarm.Audio
             }
         }
 
+        /// <summary>
+        /// Bends the track's playback rate. The death sequence drags it down as the world slows,
+        /// which is most of why slow motion reads as slow motion rather than as a frame rate
+        /// problem. Restored to 1 when a run restarts — the source outlives the scene.
+        /// </summary>
+        public static void SetPitch(float pitch)
+        {
+            if (_source != null) _source.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Install()
         {

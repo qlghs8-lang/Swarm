@@ -1,4 +1,4 @@
-using Swarm.Player;
+﻿using Swarm.Player;
 using Swarm.UI;
 using UnityEngine;
 
@@ -51,6 +51,9 @@ namespace Swarm.Weapon
 
         /// <summary>0 = just fired, 1 = ready to fire.</summary>
         public float CooldownProgress => Mathf.Clamp01(_timer / EffectiveCooldown);
+
+        /// <summary>버프가 유지되는 시간(초).</summary>
+        public float BuffDuration => buffDuration;
 
         private void Update()
         {

@@ -31,17 +31,22 @@ namespace Swarm.EditorTools
         private const int EnemyLayer = 7;
         private const int PickupLayer = 8;
 
-        // The canvas is 48px tall at 32 PPU with the ground line on its bottom edge, so the pot
-        // body sits between 0.1 and 0.97 units above the transform. The trigger covers the body
-        // and nothing else: a collider as tall as the canvas would let a stray arrow break a pot
-        // it visibly flew over.
         // Written onto the prefab rather than left to the component's own default: the prefab
         // serialises whatever the field held the day it was built, so a later change to the
         // default would never reach a HealthPackPickup.prefab that already exists on disk.
         private const float HealPercent = 0.1f;
 
-        private const float BodyRadius = 0.34f;
-        private const float BodyCentreHeight = 0.5f;
+        // The canvas is 48px tall at 64 PPU with the ground line on its bottom edge, so the pot
+        // body sits between 0.05 and 0.48 units above the transform. The trigger covers the body
+        // and nothing else: a collider as tall as the canvas would let a stray arrow break a pot
+        // it visibly flew over.
+        //
+        // 64 PPU rather than the 32 the other props use, because halving the pot's world size is
+        // an import setting, not a redraw: the same art on a 24px canvas lost the rim, the
+        // handles and the banding and read as a brown lump. Finer pixels than the ground is the
+        // cheaper trade.
+        private const float BodyRadius = 0.17f;
+        private const float BodyCentreHeight = 0.25f;
 
         [MenuItem("Swarm/Setup/Build Breakable Pot")]
         public static void RunFromMenu() => Execute(true);
@@ -78,7 +83,7 @@ namespace Swarm.EditorTools
                 return;
             }
 
-            var upToDate = IsPotWired(AssetDatabase.LoadAssetAtPath<GameObject>(PotPrefabPath)) &&
+            var upToDate = IsPotCurrent(AssetDatabase.LoadAssetAtPath<GameObject>(PotPrefabPath)) &&
                            IsHealthPackTuned(AssetDatabase.LoadAssetAtPath<GameObject>(HealthPackPrefabPath)) &&
                            AssetDatabase.LoadAssetAtPath<GameObject>(MagnetPrefabPath) != null;
             if (!verbose && upToDate) return;
@@ -98,12 +103,15 @@ namespace Swarm.EditorTools
             Debug.Log("PotSetup: built Prop_Pot, HealthPackPickup and MagnetPickup.");
         }
 
-        /// <summary>A pot built before a drop was added to the table still exists on disk with a
-        /// hole in it, and only a field check catches that — the prefab being present does not
-        /// mean it is current.</summary>
-        private static bool IsPotWired(GameObject prefab)
+        /// <summary>A pot built before a drop was added to the table, or before the pot was
+        /// resized, is still on disk with a hole in it or a collider the wrong size. Only a field
+        /// check catches that — the prefab being present does not mean it is current.</summary>
+        private static bool IsPotCurrent(GameObject prefab)
         {
             if (prefab == null || !prefab.TryGetComponent<BreakablePot>(out var pot)) return false;
+            if (!prefab.TryGetComponent<CircleCollider2D>(out var collider)) return false;
+            if (!Mathf.Approximately(collider.radius, BodyRadius)) return false;
+            if (!Mathf.Approximately(collider.offset.y, BodyCentreHeight)) return false;
 
             var serialized = new SerializedObject(pot);
             return serialized.FindProperty("experiencePickupPrefab").objectReferenceValue != null &&
