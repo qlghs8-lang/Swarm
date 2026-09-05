@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using Swarm.Player;
 using Swarm.Weapon;
 using UnityEngine;
@@ -70,6 +71,8 @@ namespace Swarm.Game
             {
                 experience.AddExperience(amount);
             }
+
+            SoundEffects.Play(SoundEffect.ExperiencePickup);
 
             SharedObjectPool.Release(_sourcePrefab, gameObject);
         }

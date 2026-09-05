@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{0B4352AA-05CD-41B1-8492-2AA81A1B4C43}" SchemaVersion="133">
+	<GameParameters>
+		<WorkUnit Name="Default Work Unit" ID="{0B4352AA-05CD-41B1-8492-2AA81A1B4C43}" PersistMode="Standalone">
+			<ChildrenList>
+				<GameParameter Name="Enemy_Count" ID="{920EEF90-7B9D-4117-A6DC-15963F34B701}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Player_Health" ID="{AC62E74C-2E38-49F1-93F3-DD6D571C83E7}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_Music" ID="{F2E9F536-A4A0-4648-A793-36CDB86412E5}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_SFX" ID="{2DA00BA7-643D-41EF-AD37-16120082EA73}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Music_Pitch" ID="{6DA07FAE-955B-4EC0-B20D-F49E3EBEAEE1}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0.1"/>
+						<Property Name="Max" Type="Real64" Value="3"/>
+						<Property Name="Min" Type="Real64" Value="0.1"/>
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>

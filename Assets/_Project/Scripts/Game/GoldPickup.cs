@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using Swarm.Weapon;
 using UnityEngine;
 
@@ -57,6 +58,7 @@ namespace Swarm.Game
             _collected = true;
 
             GoldWallet.Add(amount);
+            SoundEffects.Play(SoundEffect.ObjectPickup);
             SharedObjectPool.Release(_sourcePrefab, gameObject);
         }
     }

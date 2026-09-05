@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{02B9406F-2AB1-4481-B374-9E0433717F4F}" SchemaVersion="133">
+	<Events>
+		<WorkUnit Name="Default Work Unit" ID="{02B9406F-2AB1-4481-B374-9E0433717F4F}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Play_Music" ID="{0AAF7C16-BB01-4CFC-88F1-4AD6A1625A7E}">
+					<ChildrenList>
+						<Action Name="Play_Music" ID="{051C40C0-7316-4E84-914F-F0A8777E3DD1}" ShortID="247812786">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Music_Loop" ID="{FE28ED5C-E4BD-4857-81ED-78EB10714CDD}" WorkUnitID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Stop_Music" ID="{E50E1288-176E-4647-BEA0-D576BB87AB8B}">
+					<ChildrenList>
+						<Action Name="Stop_Music" ID="{DE8CA470-0991-497B-B37E-D3DD61AC9982}" ShortID="235171192">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="2"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Music_Loop" ID="{FE28ED5C-E4BD-4857-81ED-78EB10714CDD}" WorkUnitID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_XP_Pickup" ID="{2BD7A02C-C00A-47D0-9308-E136689A7A26}">
+					<ChildrenList>
+						<Action Name="Play_XP_Pickup" ID="{FE0ADDB2-C786-4F41-A719-5114A0A79335}" ShortID="217246834">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="XP_Pickup" ID="{36041C85-D89B-45D5-9A1E-0A20A5B70D3D}" WorkUnitID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Object_Pickup" ID="{56921EF2-5E0A-4701-A602-882D4D62E4AF}">
+					<ChildrenList>
+						<Action Name="Play_Object_Pickup" ID="{87056572-C840-4EC8-86FD-27E9780D2842}" ShortID="133126704">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Object_Pickup" ID="{A5687191-394D-4725-B8B8-FD09EA09C543}" WorkUnitID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>

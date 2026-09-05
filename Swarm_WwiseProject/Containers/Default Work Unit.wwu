@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}" SchemaVersion="133">
+	<Containers>
+		<WorkUnit Name="Default Work Unit" ID="{A1CA0E59-2437-421A-936A-D4A6A9F2DB0A}" PersistMode="Standalone">
+			<ChildrenList>
+				<PropertyContainer Name="SFX" ID="{31D99C73-609F-4BD0-930B-900ECFEA7F02}" ShortID="141144419">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SFX" ID="{5694EDFD-528E-4887-8A16-EDCF51E73AEA}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Sound Name="XP_Pickup" ID="{36041C85-D89B-45D5-9A1E-0A20A5B70D3D}" ShortID="351324395">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="SFX_XP_Pickup" ID="{C4462A99-CF90-4F78-BC3A-EF0A7E2AC328}">
+									<Language>SFX</Language>
+									<AudioFile>SFX\SFX_XP_Pickup.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="295527879"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="SFX_XP_Pickup" ID="{C4462A99-CF90-4F78-BC3A-EF0A7E2AC328}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="Object_Pickup" ID="{A5687191-394D-4725-B8B8-FD09EA09C543}" ShortID="101469981">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="SFX_Object_Pickup" ID="{61FA68ED-2E4F-479A-836A-A1AB917BD705}">
+									<Language>SFX</Language>
+									<AudioFile>SFX\SFX_Object_Pickup.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="435317453"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="SFX_Object_Pickup" ID="{61FA68ED-2E4F-479A-836A-A1AB917BD705}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</PropertyContainer>
+				<BlendContainer Name="Music_Bed" ID="{857ACE54-F8A0-45EA-BAFE-7EB1575CFDE8}" ShortID="250601001">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Music" ID="{825D660B-344E-4349-9EE6-45EEFEDE4A03}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Sound Name="Layer_Base" ID="{ECB9A24A-EE0E-431B-BA42-A7980511F39A}" ShortID="783781313">
+							<PropertyList>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="Music_Layer_Base" ID="{7C94599D-BE7E-46CD-AB18-C62B2522EA68}">
+									<Language>SFX</Language>
+									<AudioFile>SFX\Music_Layer_Base.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1035275941"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="Music_Layer_Base" ID="{7C94599D-BE7E-46CD-AB18-C62B2522EA68}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="Layer_Mid" ID="{B91FC469-4402-441F-A479-D15E89F6F7DD}" ShortID="800841855">
+							<PropertyList>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="Music_Layer_Mid" ID="{61A3C09E-0269-4CCC-BA5E-2544B745DE13}">
+									<Language>SFX</Language>
+									<AudioFile>SFX\Music_Layer_Mid.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="386334839"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="Music_Layer_Mid" ID="{61A3C09E-0269-4CCC-BA5E-2544B745DE13}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="Layer_High" ID="{59E7D354-3662-43EE-A5C8-F06F04F48B78}" ShortID="917468470">
+							<PropertyList>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="Music_Layer_High" ID="{8EDD1023-056B-4CA4-A90C-D0E2D560CD07}">
+									<Language>SFX</Language>
+									<AudioFile>SFX\Music_Layer_High.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="318822926"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="Music_Layer_High" ID="{8EDD1023-056B-4CA4-A90C-D0E2D560CD07}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+					<BlendTrackList>
+						<BlendTrack Name="Track_Base" ID="{D80ED254-25BD-4815-B471-106B6BC36BEC}" ShortID="770542320">
+							<BlendTrackAssocList>
+								<BlendTrackAssoc>
+									<ItemRef Name="Layer_Base" ID="{ECB9A24A-EE0E-431B-BA42-A7980511F39A}"/>
+								</BlendTrackAssoc>
+							</BlendTrackAssocList>
+						</BlendTrack>
+						<BlendTrack Name="Track_Mid" ID="{8BC8949F-C0A5-42BA-9073-E10513182F2C}" ShortID="54654187">
+							<PropertyList>
+								<Property Name="EnableCrossFading" Type="bool" Value="True"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="LayerCrossFadeControlInput">
+									<ObjectRef Name="Enemy_Count" ID="{920EEF90-7B9D-4117-A6DC-15963F34B701}" WorkUnitID="{0B4352AA-05CD-41B1-8492-2AA81A1B4C43}"/>
+								</Reference>
+							</ReferenceList>
+							<BlendTrackAssocList>
+								<BlendTrackAssoc>
+									<ItemRef Name="Layer_Mid" ID="{B91FC469-4402-441F-A479-D15E89F6F7DD}"/>
+									<CrossfadingInfo>
+										<LeftEdgePos>8</LeftEdgePos>
+										<LeftFadingMode>Manual</LeftFadingMode>
+										<LeftFadingSegmentShape>Linear</LeftFadingSegmentShape>
+										<LeftFadingPos>30</LeftFadingPos>
+										<RightEdgePos>100</RightEdgePos>
+										<RightFadingMode>None</RightFadingMode>
+										<RightFadingSegmentShape>Linear</RightFadingSegmentShape>
+									</CrossfadingInfo>
+								</BlendTrackAssoc>
+							</BlendTrackAssocList>
+						</BlendTrack>
+						<BlendTrack Name="Track_High" ID="{74153014-590A-43CD-BFFC-63560C6513AF}" ShortID="939994751">
+							<PropertyList>
+								<Property Name="EnableCrossFading" Type="bool" Value="True"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="LayerCrossFadeControlInput">
+									<ObjectRef Name="Enemy_Count" ID="{920EEF90-7B9D-4117-A6DC-15963F34B701}" WorkUnitID="{0B4352AA-05CD-41B1-8492-2AA81A1B4C43}"/>
+								</Reference>
+							</ReferenceList>
+							<BlendTrackAssocList>
+								<BlendTrackAssoc>
+									<ItemRef Name="Layer_High" ID="{59E7D354-3662-43EE-A5C8-F06F04F48B78}"/>
+									<CrossfadingInfo>
+										<LeftEdgePos>35</LeftEdgePos>
+										<LeftFadingMode>Manual</LeftFadingMode>
+										<LeftFadingSegmentShape>Linear</LeftFadingSegmentShape>
+										<LeftFadingPos>65</LeftFadingPos>
+										<RightEdgePos>100</RightEdgePos>
+										<RightFadingMode>None</RightFadingMode>
+										<RightFadingSegmentShape>Linear</RightFadingSegmentShape>
+									</CrossfadingInfo>
+								</BlendTrackAssoc>
+							</BlendTrackAssocList>
+						</BlendTrack>
+					</BlendTrackList>
+				</BlendContainer>
+				<Sound Name="Music_Loop" ID="{FE28ED5C-E4BD-4857-81ED-78EB10714CDD}" ShortID="662691037">
+					<PropertyList>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{09EBAAB8-749E-4E43-8FD2-C5BD6AAA2361}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Music" ID="{825D660B-344E-4349-9EE6-45EEFEDE4A03}" WorkUnitID="{222773A3-E754-40A3-9D66-6810986EEB32}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Music_BGM_Loop" ID="{FFB2F8D8-62E0-4B50-8C34-25180F595790}">
+							<Language>SFX</Language>
+							<AudioFile>SFX\Music_BGM_Loop.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="904021530"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Music_BGM_Loop" ID="{FFB2F8D8-62E0-4B50-8C34-25180F595790}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
+	</Containers>
+</WwiseDocument>

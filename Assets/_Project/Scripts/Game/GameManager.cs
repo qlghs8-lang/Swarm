@@ -73,6 +73,7 @@ namespace Swarm.Game
             // only knowable as a difference against where it started.
             _goldAtRunStart = GoldWallet.Current;
             BackgroundMusic.SetPitch(1f);
+            AudioDirector.SetGameState(GameAudioState.Playing);
 
             var player = GameObject.FindGameObjectWithTag("Player");
             if (player == null) return;
@@ -175,6 +176,10 @@ namespace Swarm.Game
             if (_isGameEnded) return;
             _isGameEnded = true;
             RunStats.MarkRunEnded();
+
+            // 사망과 클리어가 함께 지나가는 깔때기다. 둘을 다르게 들려줄 필요가 생기면
+            // 상태를 나누는 것이 아니라 Wwise 쪽에서 갈라야 한다.
+            AudioDirector.SetGameState(GameAudioState.Dead);
 
             // The clear sequence hands time back so the arena can empty out on screen, which also
             // means the spawner would keep feeding it. Nothing should arrive after the run ends.

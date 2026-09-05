@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using Swarm.Weapon;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ namespace Swarm.Game
             _collected = true;
 
             MagnetAttractable.AttractAll();
+            SoundEffects.Play(SoundEffect.ObjectPickup);
             SharedObjectPool.Release(_sourcePrefab, gameObject);
         }
     }

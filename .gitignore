@@ -118,3 +118,21 @@ InitTestScene*.unity*
 
 # Wwise-MCP (local tool binary)
 /Tools/Wwise-MCP/
+
+# --- Wwise ---
+# Generated SoundBanks (build artifacts; regenerated from the Wwise project)
+/[Aa]ssets/StreamingAssets/Audio/GeneratedSoundBanks/
+/Swarm_WwiseProject/GeneratedSoundBanks/
+# Wwise authoring cache & per-user files
+/Swarm_WwiseProject/.cache/
+/Swarm_WwiseProject/*.wsettings
+/Swarm_WwiseProject/*.validationcache
+# Launcher integration leftovers
+/WwiseUnityIntegration_*_Src.zip
+/logRunSetup.txt
+# Native Wwise binaries (743MB) and offline docs (59MB).
+# NOT source - the Wwise Launcher regenerates these via "Integrate Wwise into Project".
+# C# scripts and their .meta files stay tracked, so scene/prefab GUID references survive.
+# See docs/wwise-pipeline.md for the setup procedure.
+/[Aa]ssets/Wwise/API/Runtime/Plugins/
+/[Aa]ssets/Wwise/Documentation/

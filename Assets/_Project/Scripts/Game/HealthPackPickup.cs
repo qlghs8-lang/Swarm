@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using Swarm.Player;
 using Swarm.Weapon;
 using UnityEngine;
@@ -48,6 +49,7 @@ namespace Swarm.Game
 
             // At least 1: a 10% heal on a small bar must never round down to nothing.
             health.Heal(Mathf.Max(1, Mathf.RoundToInt(health.MaxHealth * healPercent)));
+            SoundEffects.Play(SoundEffect.ObjectPickup);
             SharedObjectPool.Release(_sourcePrefab, gameObject);
         }
     }

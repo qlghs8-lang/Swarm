@@ -1,3 +1,4 @@
+using Swarm.Audio;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -36,6 +37,9 @@ namespace Swarm.Game
 
         private void Start()
         {
+            // 사실 보고일 뿐이다. 타이틀에서 무엇을 어떻게 들려줄지는 Wwise가 정한다.
+            AudioDirector.SetGameState(GameAudioState.Title);
+
             if (string.IsNullOrEmpty(PlayerPrefs.GetString(SelectedCharacterKey, "")) && characters.Length > 0)
             {
                 PlayerPrefs.SetString(SelectedCharacterKey, characters[0].Id);

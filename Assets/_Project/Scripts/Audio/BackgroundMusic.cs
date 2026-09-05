@@ -9,19 +9,17 @@ namespace Swarm.Audio
     /// the stage and every restart are separate scene loads — a BGM placed inside a scene would
     /// cut out and restart from zero each time the player dies or returns to the title.
     ///
-    /// The clip is pulled from Resources so no scene or prefab has to reference it: drop an audio
-    /// file at Assets/_Project/Resources/BGM.* (any Unity-supported format) and it plays. If the
-    /// file is absent this does nothing at all, silently — a missing track is not an error worth
-    /// spamming the console over on every launch.
+    /// The track itself now lives in Wwise (Music_Bed) rather than in an AudioClip, so what plays,
+    /// how many layers are audible and when they cross-fade is decided there. This class only owns
+    /// the two values the game has an opinion about — the player's volume setting and the pitch the
+    /// death sequence bends — and hands them to <see cref="AudioDirector"/>. The public API is
+    /// unchanged, so GameManager, ResultSequence, GameSettings and SettingsMenu never learn that
+    /// the backend moved.
     /// </summary>
     public static class BackgroundMusic
     {
-        private const string ClipResourcePath = "BGM";
-        private const string ObjectName = "BackgroundMusic (Runtime)";
         private const string VolumeKey = "swarm.bgm.volume";
         private const float DefaultVolume = 0.5f;
-
-        private static AudioSource _source;
 
         /// <summary>0-1. Persisted, so a player who turns the music down stays turned down.</summary>
         public static float Volume
@@ -32,43 +30,26 @@ namespace Swarm.Audio
                 var clamped = Mathf.Clamp01(value);
                 PlayerPrefs.SetFloat(VolumeKey, clamped);
                 PlayerPrefs.Save();
-                if (_source != null) _source.volume = clamped;
+                AudioDirector.SetMusicVolume(clamped);
             }
         }
 
         /// <summary>
         /// Bends the track's playback rate. The death sequence drags it down as the world slows,
         /// which is most of why slow motion reads as slow motion rather than as a frame rate
-        /// problem. Restored to 1 when a run restarts — the source outlives the scene.
+        /// problem. Restored to 1 when a run restarts — the music outlives the scene.
         /// </summary>
-        public static void SetPitch(float pitch)
-        {
-            if (_source != null) _source.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
-        }
+        public static void SetPitch(float pitch) => AudioDirector.SetMusicPitch(pitch);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Install()
         {
-            // A domain reload between play sessions clears _source but leaves nothing behind, so
-            // this only ever runs once per play session.
-            if (_source != null) return;
-
-            var clip = Resources.Load<AudioClip>(ClipResourcePath);
-            if (clip == null) return;
-
-            var host = new GameObject(ObjectName);
-            Object.DontDestroyOnLoad(host);
-
-            _source = host.AddComponent<AudioSource>();
-            _source.clip = clip;
-            _source.loop = true;
-            _source.playOnAwake = false;
-            _source.volume = Volume;
-            // 2D: the listener moves with the player, and a positional BGM would pan and fade.
-            _source.spatialBlend = 0f;
-            // The game pauses with Time.timeScale = 0; audio should keep playing through it.
-            _source.ignoreListenerPause = true;
-            _source.Play();
+            // The sound engine may not be up yet — the two RuntimeInitializeOnLoadMethod hooks have
+            // no defined order between them. AudioDirector holds these until it can send them, so
+            // nothing here has to know or care.
+            AudioDirector.SetMusicVolume(Volume);
+            AudioDirector.SetMusicPitch(1f);
+            AudioDirector.PlayMusic();
         }
     }
 }

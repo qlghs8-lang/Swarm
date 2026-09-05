@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Swarm.Audio;
 using Swarm.Game;
 using Swarm.Player;
 using Swarm.Weapon;
@@ -95,6 +96,10 @@ namespace Swarm.LevelUp
 
             panelRoot.SetActive(true);
             Time.timeScale = 0f;
+
+            // Wwise는 Time.timeScale의 영향을 받지 않는다. 카드가 떠 있는 동안 음악을 덕킹할지
+            // 그대로 둘지는 Game_State에 물릴 Wwise 쪽 배선이 정한다.
+            AudioDirector.SetGameState(GameAudioState.LevelUp);
         }
 
         public void SelectCard1() => Select(_pickedApply1);
@@ -106,6 +111,7 @@ namespace Swarm.LevelUp
             apply?.Invoke();
             panelRoot.SetActive(false);
             Time.timeScale = 1f;
+            AudioDirector.SetGameState(GameAudioState.Playing);
         }
 
         private List<Candidate> BuildCandidates()
