@@ -47,9 +47,9 @@ Unity 6000.4.3f1 (URP) · C# · 1인 개발
 
 |                                                                                                            |                                                                         |
 | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| ![레벨업 카드](docs/media/gif-02-levelup.gif)                                                                   | ![무기 진화](docs/media/gif-03-evolution.gif)                                |
+| ![레벨업 카드](docs/media/gif-02-levelup.gif)                                                              | ![무기 진화](docs/media/gif-03-evolution.gif)                           |
 | **레벨업 카드** — 무기 강화와 런 패시브가 한 풀에서 섞여 나오고, 이미 투자한 항목에 가중치가 붙는다 | **무기 진화** — 레벨 8 도달 시 완전히 다른 무기로 전환(9종 전부) |
-| ![보스전](docs/media/gif-04-boss.gif)                                                                           | ![결과 연출](docs/media/gif-05-result.gif)                                   |
+| ![보스전](docs/media/gif-04-boss.gif)                                                                      | ![결과 연출](docs/media/gif-05-result.gif)                              |
 | **보스전** — 슬램/운석 2패턴, 경고 도형은 실제 판정 반경과 동일                                     | **클리어 연출** — 시간을 되돌리며 남은 픽업을 전량 수거          |
 
 ---
@@ -359,8 +359,8 @@ private static readonly List<Collider2D> QueryBuffer = new();   // 재사용, �
 
 ## 코드 둘러보기
 
-| 보고 싶은 것                          | 파일                                                                                     |
-| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 보고 싶은 것                          | 파일                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------- |
 | 무기 공통 레벨링·진화 프레임워크     | [`Weapon/LevelableWeapon.cs`](Assets/_Project/Scripts/Weapon/LevelableWeapon.cs)     |
 | 논-얼로케이션 적 탐색                 | [`Weapon/EnemyTargeting.cs`](Assets/_Project/Scripts/Weapon/EnemyTargeting.cs)       |
 | 진화 전후 공통 액티브 스킬 인터페이스 | [`Weapon/IActiveRoll.cs`](Assets/_Project/Scripts/Weapon/IActiveRoll.cs)             |
@@ -375,14 +375,14 @@ private static readonly List<Collider2D> QueryBuffer = new();   // 재사용, �
 
 ## 기술 스택
 
-| 분류   | 내용                                                                            |
-| ------ | ------------------------------------------------------------------------------- |
-| 엔진   | Unity 6000.4.3f1 · URP                                                         |
-| 입력   | Unity Input System (키보드 + 온스크린 가상 조이스틱)                            |
-| 카메라 | Cinemachine                                                                     |
-| 타일맵 | `com.unity.2d.tilemap` — 아레나 바닥 약 3만 칸 런타임 생성                   |
-| 사운드 | Wwise —`AudioDirector`로 게임 이벤트를 일괄 라우팅                           |
-| 저장   | `PlayerPrefs` (골드, 캐릭터 해금, 영구 패시브, 설정)                          |
+| 분류   | 내용                                                                                 |
+| ------ | ------------------------------------------------------------------------------------ |
+| 엔진   | Unity 6000.4.3f1 · URP                                                              |
+| 입력   | Unity Input System (키보드 + 온스크린 가상 조이스틱)                                 |
+| 카메라 | Cinemachine                                                                          |
+| 타일맵 | `com.unity.2d.tilemap` — 아레나 바닥 약 3만 칸 런타임 생성                        |
+| 사운드 | Wwise —`AudioDirector`로 게임 이벤트를 일괄 라우팅                                |
+| 저장   | `PlayerPrefs` (골드, 캐릭터 해금, 영구 패시브, 설정)                               |
 | 아트   | Aseprite 전량 자체 제작 (외부 에셋 미사용) —[`docs/art-plan.md`](docs/art-plan.md) |
 
 ---
@@ -425,4 +425,4 @@ Resources가 안티패턴이 되는 조건은 "쓰지 않는 에셋까지 강제
 
 ## 다음 작업
 
-효과음 적용 마무리, 밸런싱 추가 검증, WebGL 빌드 배포.
+WebGL 빌드 배포.

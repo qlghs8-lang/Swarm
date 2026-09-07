@@ -160,3 +160,4 @@ InitTestScene*.unity*
 
 # MCP server config (machine-local absolute paths)
 /.mcp.json
+/.codex/config.toml

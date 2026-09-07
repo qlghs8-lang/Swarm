@@ -899,7 +899,7 @@ namespace Swarm.Game
             md.AppendLine("- 목표치를 유지하기 위해 스포너의 자체 스폰 주기를 잠시 늘리고, 죽은 만큼은 프로브가 채웠습니다.");
             md.AppendLine("- `DebugStatsOverlay`는 측정 창 동안 꺼져 있었습니다(OnGUI 할당이 GC 수치를 오염시키므로).");
             md.AppendLine("- 레벨업 카드 창(timeScale 0)이 열리면 해당 회차는 버리고 카드 선택 후 처음부터 다시 측정했습니다.");
-            md.AppendLine("- 병목의 소재(`Physics2D.Simulate` 비중 등)는 여전히 Profiler 창에서 읽어야 합니다 — docs/performance-profiling.md §6.3.");
+            md.AppendLine("- 병목의 소재(`Physics2D.Simulate` 비중 등)는 여전히 Profiler 창에서 읽어야 합니다 — docs/performance-profiling.md §4.1.");
 
             var summary = new StringBuilder(512);
             summary.AppendLine("[PERF SWEEP] 완료");
