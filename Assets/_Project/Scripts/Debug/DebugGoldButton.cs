@@ -30,6 +30,9 @@ namespace Swarm.Game
 
         private static void TryInstall()
         {
+            // 기본적으로 꺼져 있다. Swarm ▸ 개발용 UI 표시를 켜야 버튼이 생긴다.
+            if (!DevUi.IsEnabled) return;
+
             // TitleManager only exists on the title screen, which is where gold is actually spent.
             if (Object.FindAnyObjectByType<TitleManager>() == null) return;
 

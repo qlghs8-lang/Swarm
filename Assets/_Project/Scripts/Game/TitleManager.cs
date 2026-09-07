@@ -16,6 +16,11 @@ namespace Swarm.Game
         [SerializeField] private string gameSceneName = "Game";
         [SerializeField] private string testStageSceneName = "TestStage";
 
+        // 테스트 스테이지 버튼, 진행도 초기화 버튼처럼 개발 중에만 필요한 오브젝트들.
+        // DevUi가 꺼져 있으면(기본값) 화면에서 사라지므로, 에디터 플레이 화면이 출시 화면과
+        // 같아진다. Swarm ▸ 개발용 UI 표시로 다시 켤 수 있다.
+        [SerializeField] private GameObject[] devOnlyObjects;
+
         private SlotListView _list;
 
         private void OnEnable()
@@ -33,6 +38,16 @@ namespace Swarm.Game
         private void UpdateGoldText()
         {
             if (goldText != null) goldText.text = $"보유 골드: {GoldWallet.Current}";
+        }
+
+        private void Awake()
+        {
+            if (DevUi.IsEnabled || devOnlyObjects == null) return;
+
+            foreach (var target in devOnlyObjects)
+            {
+                if (target != null) target.SetActive(false);
+            }
         }
 
         private void Start()

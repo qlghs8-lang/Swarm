@@ -1550,6 +1550,9 @@ MonoBehaviour:
   slotPrefab: {fileID: 100000005, guid: 696351af41484821b32900542b725e2d, type: 3}
   gameSceneName: Game
   testStageSceneName: TestStage
+  devOnlyObjects:
+  - {fileID: 2300000001}
+  - {fileID: 450000}
 --- !u!1 &600001
 GameObject:
   m_ObjectHideFlags: 0

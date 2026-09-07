@@ -56,6 +56,12 @@ namespace Swarm.Enemy
         private float _poisonSpeedMultiplier;
         private DamageStatType _poisonDamageType;
         private float _poisonPenetration;
+        // What is actually pushed to the defence/movement systems right now, so a frame with
+        // several overlapping clouds only writes through when the value really changed.
+        private float _appliedDefensePenalty;
+        private float _appliedSpeedMultiplier = 1f;
+
+        private EnemyChaser _chaser;
 
         public int GoldReward => goldReward;
 
@@ -68,6 +74,7 @@ namespace Swarm.Enemy
             _currentHealth = maxHealth;
             _defenseBonus = baseDefense;
             _magicDefenseBonus = baseMagicDefense;
+            TryGetComponent(out _chaser);
         }
 
         public void SetPool(ObjectPool pool)
@@ -95,6 +102,8 @@ namespace Swarm.Enemy
             _burnTimer = 0f;
             _isPoisoned = false;
             _poisonedThisFrame = false;
+            _appliedDefensePenalty = 0f;
+            _appliedSpeedMultiplier = 1f;
             OnHealthChanged?.Invoke(_currentHealth, _currentMaxHealth);
         }
 
@@ -124,15 +133,39 @@ namespace Swarm.Enemy
             _poisonDamageType = damageType;
             _poisonPenetration = penetration;
 
+            // Damage values and debuff values follow the same rule: the last cloud to report this
+            // frame wins. Refreshing here rather than only on first entry is what keeps them
+            // consistent -- a second, stronger cloud used to overwrite the damage fields while the
+            // defence penalty and the slow stayed at the first cloud's weaker values.
+            RefreshPoisonDebuffs();
+
             if (_isPoisoned) return;
 
             _isPoisoned = true;
             _poisonTickTimer = tickInterval;
-            SetTemporaryDefensePenalty(defensePenalty);
-            if (TryGetComponent<EnemyChaser>(out var chaser))
+        }
+
+        private void RefreshPoisonDebuffs()
+        {
+            if (!Mathf.Approximately(_appliedDefensePenalty, _poisonDefensePenalty))
             {
-                chaser.SetSpeedMultiplier(speedMultiplier);
+                _appliedDefensePenalty = _poisonDefensePenalty;
+                SetTemporaryDefensePenalty(_poisonDefensePenalty);
             }
+
+            if (!Mathf.Approximately(_appliedSpeedMultiplier, _poisonSpeedMultiplier))
+            {
+                _appliedSpeedMultiplier = _poisonSpeedMultiplier;
+                if (_chaser != null) _chaser.SetSpeedMultiplier(_poisonSpeedMultiplier);
+            }
+        }
+
+        private void ClearPoisonDebuffs()
+        {
+            _appliedDefensePenalty = 0f;
+            _appliedSpeedMultiplier = 1f;
+            SetTemporaryDefensePenalty(0f);
+            if (_chaser != null) _chaser.SetSpeedMultiplier(1f);
         }
 
         private void Update()
@@ -165,11 +198,7 @@ namespace Swarm.Enemy
             else if (_isPoisoned)
             {
                 _isPoisoned = false;
-                SetTemporaryDefensePenalty(0f);
-                if (TryGetComponent<EnemyChaser>(out var chaser))
-                {
-                    chaser.SetSpeedMultiplier(1f);
-                }
+                ClearPoisonDebuffs();
             }
         }
 

@@ -136,3 +136,27 @@ InitTestScene*.unity*
 # See docs/wwise-pipeline.md for the setup procedure.
 /[Aa]ssets/Wwise/API/Runtime/Plugins/
 /[Aa]ssets/Wwise/Documentation/
+
+# --- Local working files (not part of the published repo) ---
+# Portfolio production drafts/prompts/build output.
+# README.md and the docs/ files it links to (game-design, performance-profiling,
+# art-plan, wwise-pipeline, media/) stay tracked; everything below is local-only.
+/docs/README-draft.md
+/docs/portfolio-build/
+/docs/portfolio-format-plan.md
+/docs/portfolio-guide.md
+/docs/portfolio-notes/
+/docs/portfolio-prompts.md
+/docs/portfolio-todo.md
+
+# Runtime perf report dumps (DebugPerfProbe output)
+/PerfReports/
+
+# Wwise demo renders / scratch outputs
+/Claude outputs/
+
+# Staging area for files pending removal
+/_to_delete/
+
+# MCP server config (machine-local absolute paths)
+/.mcp.json

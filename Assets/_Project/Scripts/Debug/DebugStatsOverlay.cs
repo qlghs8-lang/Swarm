@@ -37,6 +37,8 @@ namespace Swarm.Game
 
         private static void TryInstall()
         {
+            if (!DevUi.IsEnabled) return;
+
             // Only where enemies actually spawn — no point on the title screen.
             if (Object.FindAnyObjectByType<EnemySpawner>() == null) return;
             if (Object.FindAnyObjectByType<DebugStatsOverlay>() != null) return;
