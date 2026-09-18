@@ -171,16 +171,103 @@ namespace Swarm.EditorTools
         private static string Normalize(string path) =>
             path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 
+        // ── WebGL: 뱅크를 빌드에서 빼낸다 ────────────────────────────────────────────────
+        //
+        // 웹 빌드는 무음이다. AK 런타임 어셈블리가 빌드에서 빠지고 AudioDirector가 no-op이 된다
+        // (docs/webgl-build.md §2). 그런데 StreamingAssets는 플랫폼과 무관하게 통째로 빌드에
+        // 실리므로, 그냥 두면 아무도 읽지 않을 Windows 뱅크 6MB가 웹 빌드에 따라 들어간다.
+        // 폰트를 480KB로 서브셋한 빌드에 6MB를 얹는 건 말이 안 된다.
+        //
+        // 지우지 않고 치웠다 되돌리는 이유는 에디터다. StreamingAssets의 뱅크가 사라지면
+        // Play 모드에서 Bank Load Failed가 프레임마다 쏟아지는데, 뱅크에는 아무 문제가 없고
+        // 복사가 안 됐을 뿐이라 로그만 봐서는 원인이 보이지 않는다 — 이 클래스 주석이 말하는
+        // 바로 그 실패다. 웹 빌드를 한 번 돌렸다는 이유로 그 상태에 빠지면 안 된다.
+
+        private const string StashFolderName = "SwarmWebGLAudioStash";
+
+        /// <summary>Assets 밖이면서 저장소에 들어가지 않는 자리. Library는 .gitignore 대상이다.</summary>
+        private static string StashRoot =>
+            Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Library", StashFolderName));
+
+        /// <summary>뱅크를 Assets 밖으로 옮긴다. 옮길 것이 있었으면 true.</summary>
+        private static bool StashBanks()
+        {
+            var banks = ResolveStreamingAssetsPath();
+            if (!Directory.Exists(banks)) return false;
+
+            var stash = StashRoot;
+            if (Directory.Exists(stash)) Directory.Delete(stash, true);
+
+            Directory.Move(banks, stash);
+
+            // .meta도 함께 옮긴다. 폴더만 사라지고 meta가 남으면 유니티가 다음 임포트에서
+            // 고아 meta를 지우고, 되돌릴 때 GUID가 새로 발급된다.
+            var meta = banks + ".meta";
+            if (File.Exists(meta)) File.Move(meta, stash + ".meta");
+
+            return true;
+        }
+
+        /// <summary>치워둔 뱅크를 제자리로. 되돌릴 것이 있었으면 true.</summary>
+        private static bool RestoreBanks()
+        {
+            var stash = StashRoot;
+            if (!Directory.Exists(stash)) return false;
+
+            var banks = ResolveStreamingAssetsPath();
+            if (Directory.Exists(banks)) Directory.Delete(banks, true);
+            Directory.CreateDirectory(Path.GetDirectoryName(banks));
+
+            Directory.Move(stash, banks);
+
+            var stashMeta = stash + ".meta";
+            if (File.Exists(stashMeta))
+            {
+                var meta = banks + ".meta";
+                if (File.Exists(meta)) File.Delete(meta);
+                File.Move(stashMeta, meta);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 빌드가 중간에 실패하거나 취소되면 후처리가 돌지 않아 뱅크가 Library에 남는다.
+        /// 그 상태를 알아채지 못한 채 에디터를 쓰면 위에 적은 그 실패로 되돌아가므로,
+        /// 에디터가 코드를 다시 로드할 때마다 남은 것이 있으면 되돌린다.
+        /// </summary>
+        [InitializeOnLoadMethod]
+        private static void RestoreStashOnLoad()
+        {
+            if (!Directory.Exists(StashRoot)) return;
+
+            EditorApplication.delayCall += () =>
+            {
+                if (!RestoreBanks()) return;
+                Debug.Log("[Audio] 중단된 WebGL 빌드가 남긴 사운드뱅크를 StreamingAssets로 되돌렸다.");
+                AssetDatabase.Refresh();
+            };
+        }
+
         /// <summary>
         /// 사람이 메뉴 누르는 것을 잊어도 빌드는 잊지 않는다. Wwise 자체 pre-build 복사와 겹치지만,
         /// 이쪽은 상수 재생성까지 함께 하므로 뱅크와 코드가 어긋난 채로 빌드가 나가지 않는다.
+        ///
+        /// WebGL은 정반대로 움직인다 — 복사하는 대신 치운다. 위 주석 참고.
         /// </summary>
-        private sealed class BuildHook : IPreprocessBuildWithReport
+        private sealed class BuildHook : IPreprocessBuildWithReport, IPostprocessBuildWithReport
         {
             public int callbackOrder => -100;
 
             public void OnPreprocessBuild(BuildReport report)
             {
+                if (report.summary.platform == BuildTarget.WebGL)
+                {
+                    if (StashBanks())
+                        Debug.Log("[Audio] WebGL 빌드 — 사운드뱅크를 빌드에서 제외한다(빌드 후 되돌림).");
+                    return;
+                }
+
                 if (Run(out var message))
                 {
                     Debug.Log($"[Audio] 빌드 전 정리 — {message}");
@@ -189,6 +276,14 @@ namespace Swarm.EditorTools
 
                 throw new BuildFailedException(
                     $"[Audio] 사운드뱅크를 준비하지 못해 빌드를 중단한다.\n{message}");
+            }
+
+            public void OnPostprocessBuild(BuildReport report)
+            {
+                if (report.summary.platform != BuildTarget.WebGL) return;
+
+                if (RestoreBanks())
+                    Debug.Log("[Audio] 사운드뱅크를 StreamingAssets로 되돌렸다.");
             }
         }
     }

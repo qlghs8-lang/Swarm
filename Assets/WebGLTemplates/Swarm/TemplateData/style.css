@@ -1,0 +1,39 @@
+/* Swarm WebGL 템플릿 — docs/webgl-build.md §4
+   CSS를 index.html에 인라인하지 않는 이유: Unity의 템플릿 전처리기는 index.html에서
+   줄 첫머리의 '#'를 #if/#else/#endif 지시자로 읽는다. CSS 선택자(#loader { ... })가
+   그 자리에 있으면 템플릿 처리가 깨지고 Unity는 조용히 기본 템플릿으로 되돌아간다.
+   Unity 기본 템플릿이 항상 CSS를 별도 파일로 빼는 이유도 같다. */
+
+:root { --bg:#0b0b0f; --fg:#e8e8ec; --dim:#6f6f7a; --accent:#c8402f; }
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:var(--bg); }
+body { font:14px/1.6 -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; color:var(--fg); }
+
+.shell { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+
+/* 16:9 레터박스. 캔버스를 창에 꽉 채우지 않는다 — UI 앵커가 데스크톱 빌드와 같은 자리에 온다. */
+.frame { position:relative; aspect-ratio:16/9; width:100%; max-width:calc(100vh * 16 / 9); max-height:100vh; }
+.canvas { display:block; width:100%; height:100%; background:#000; outline:none; }
+
+.loader { position:absolute; inset:0; display:flex; flex-direction:column;
+          align-items:center; justify-content:center; gap:22px; background:var(--bg);
+          transition:opacity .4s ease; }
+.loader.done { opacity:0; pointer-events:none; }
+.title { font-size:34px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; }
+.bar { width:min(320px, 60%); height:3px; background:#23232b; overflow:hidden; }
+.fill { width:0%; height:100%; background:var(--accent); transition:width .18s ease-out; }
+.pct { font-size:12px; color:var(--dim); letter-spacing:.14em; }
+
+.hint { position:fixed; left:0; right:0; bottom:10px; text-align:center;
+        font-size:12px; color:var(--dim); letter-spacing:.04em; }
+
+.warn { position:fixed; inset:0; display:none; flex-direction:column; gap:14px;
+        align-items:center; justify-content:center; padding:32px; text-align:center;
+        background:var(--bg); z-index:10; }
+.warn b { font-size:18px; }
+.warn p { margin:0; color:var(--dim); max-width:34em; }
+
+.err { position:fixed; left:12px; right:12px; bottom:12px; padding:10px 14px;
+       background:#3a1512; border:1px solid var(--accent); font-size:12px;
+       white-space:pre-wrap; display:none; z-index:20; }

@@ -95,6 +95,25 @@ public partial class AkBuildPreprocessor : UnityEditor.Build.IPreprocessBuild, U
 
 	private string destinationSoundBankFolder = string.Empty;
 
+	// ── Swarm 로컬 패치 — docs/webgl-build.md §2-5 ─────────────────────────────────────
+	//
+	// 이 프로젝트에는 Wwise의 WebGL 플랫폼 SDK가 설치되어 있지 않다(Generated/ 에 Windows·Mac만).
+	// 그 상태로 WebGL 빌드를 걸면 아래 세 곳이 전부 LogLevel.Error 를 뱉는다.
+	//
+	//   1. AkBasePathGetter.GetSoundBankPaths  — "Could not find source folder for <WebGL> platform"
+	//   2. OnPreprocessBuildInternal           — "SoundBank folder has not been copied for <WebGL>"
+	//   3. AkPluginActivator                   — "Unable to find Plugin Activator for Build Target WebGL"
+	//
+	// Unity는 빌드 전처리기가 뱉은 에러를 빌드 실패로 취급하므로("Error building Player: 3 errors"),
+	// 경고가 아니라 실제로 빌드가 0초 만에 멈춘다. WebGL 빌드는 애초에 무음이라(AudioDirector 참조)
+	// 이 전처리기가 할 일이 없다 — 그래서 통째로 건너뛴다.
+	//
+	// ⚠️ Wwise Launcher로 통합을 다시 돌리면 이 파일은 덮어쓰인다. asmdef 4개와 함께 다시 적용할 것.
+	private static bool IsWwiseUnsupportedTarget(UnityEditor.BuildTarget target)
+	{
+		return target == UnityEditor.BuildTarget.WebGL;
+	}
+
 	public static bool CopySoundbanks(bool generate, string platformName, ref string destinationFolder)
 	{
 		if (string.IsNullOrEmpty(platformName))
@@ -142,6 +161,11 @@ public partial class AkBuildPreprocessor : UnityEditor.Build.IPreprocessBuild, U
 
 	public void OnPreprocessBuildInternal(UnityEditor.BuildTarget target, string path)
 	{
+		if (IsWwiseUnsupportedTarget(target))
+		{
+			return;
+		}
+
 		var platformName = GetPlatformName(target);
 #if !(AK_WWISE_ADDRESSABLES && UNITY_ADDRESSABLES)
 		if (AkWwiseEditorSettings.Instance.CopySoundBanksAsPreBuildStep)
@@ -165,6 +189,11 @@ public partial class AkBuildPreprocessor : UnityEditor.Build.IPreprocessBuild, U
 
 	public void OnPostprocessBuildInternal(UnityEditor.BuildTarget target, string path)
 	{
+		if (IsWwiseUnsupportedTarget(target))
+		{
+			return;
+		}
+
 		AkPluginActivator.ActivatePluginsForDeployment(target, false);
 		if (PlatformConfigurations.TryGetValue(target, out var config))
 		{

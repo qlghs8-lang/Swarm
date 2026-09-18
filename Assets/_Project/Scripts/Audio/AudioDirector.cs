@@ -20,6 +20,15 @@ namespace Swarm.Audio
     /// 여기 있는 메서드는 전부 <b>사실을 받는다.</b> "적이 32마리다", "체력이 47%다" 까지가 게임의 몫이고,
     /// 그 사실을 무엇으로 들려줄지는 Wwise가 정한다. <c>SetIntensity(High)</c> 같은 판단이 들어온 순간
     /// 파이프라인은 죽는다 — 자세한 것은 docs/wwise-pipeline.md §0-§2.
+    ///
+    /// <para>
+    /// 파일은 두 층으로 갈라져 있다. 위쪽 <b>공개 API와 상태 관리</b>는 플랫폼과 무관하게 하나고,
+    /// 아래쪽 <b>백엔드</b>(<c>IsReady</c> / <c>TryPostEvent</c> / <c>TryApplyRtpc</c> / <c>TryApplyState</c>)만
+    /// 플랫폼별로 갈린다. WebGL 플레이어 빌드에는 Wwise 어셈블리 자체가 들어가지 않으므로
+    /// (<c>Generated/</c>에 Windows·Mac만 있다 — docs/webgl-build.md §0) 백엔드가 무음 no-op으로 바뀐다.
+    /// 조건이 <c>UNITY_WEBGL</c>이 아니라 <c>UNITY_WEBGL &amp;&amp; !UNITY_EDITOR</c>인 이유는,
+    /// 에디터는 빌드 타깃이 WebGL이어도 Wwise를 계속 들고 있어서 플레이 모드 소리를 죽일 이유가 없기 때문이다.
+    /// </para>
     /// </summary>
     public static class AudioDirector
     {
@@ -27,6 +36,8 @@ namespace Swarm.Audio
         // 이름 문자열은 여기 적지 않는다. WwiseIds.generated.cs가 실제 사운드뱅크에서 뽑아낸 것이
         // 유일한 출처다. Wwise에서 이벤트 이름을 바꾸고 뱅크를 다시 만들면 그 파일에서 해당 상수가
         // 사라져 이 줄이 컴파일되지 않는다 — 조용히 소리만 안 나는 대신 빌드가 깨져서 즉시 알게 된다.
+        //
+        // 이 상수들은 순수 uint라 WebGL 빌드에서도 그대로 컴파일된다. 쓰이지 않을 뿐이다.
         private const uint EventPlayMusic = WwiseIds.Events.Play_Music;
         private const uint EventStopMusic = WwiseIds.Events.Stop_Music;
         private const uint EventPlayXpPickup = WwiseIds.Events.Play_XP_Pickup;
@@ -40,8 +51,6 @@ namespace Swarm.Audio
             WwiseIds.States.Game_State.LevelUp,
             WwiseIds.States.Game_State.Dead
         };
-
-        private const string HostName = "AudioDirector (Runtime)";
 
         /// <summary>RTPC 슬롯. 배열 인덱스가 곧 <see cref="RtpcIds"/>의 인덱스다.</summary>
         private enum Rtpc
@@ -65,9 +74,6 @@ namespace Swarm.Audio
         private static readonly float[] _rtpcValues = new float[RtpcIds.Length];
         private static readonly bool[] _rtpcPending = new bool[RtpcIds.Length];
 
-        private static GameObject _host;
-        private static bool _banksLoaded;
-        private static bool _bankLoadFailed;
         private static bool _musicWanted;
         private static bool _musicPosted;
         private static bool _statePending;
@@ -150,6 +156,9 @@ namespace Swarm.Audio
         ///
         /// <c>RuntimeInitializeOnLoadMethod</c>끼리는 순서가 보장되지 않아, 게임 쪽 설치가 Wwise 초기화보다
         /// 먼저 도는 실행이 존재한다. 그때 들어온 값을 버리면 그 판 내내 볼륨이 기본값으로 남는다.
+        ///
+        /// WebGL에서는 <see cref="IsReady"/>가 항상 false라 첫 줄에서 끝난다 — 매 프레임 도는 경로이므로
+        /// 무음 빌드에서 루프가 헛돌지 않게 하는 것이 중요하다.
         /// </summary>
         public static void Flush()
         {
@@ -163,14 +172,65 @@ namespace Swarm.Audio
             for (var i = 0; i < _rtpcValues.Length; i++)
             {
                 if (!_rtpcPending[i]) continue;
-                if (AkUnitySoundEngine.SetRTPCValue(RtpcIds[i], _rtpcValues[i]) != AKRESULT.AK_Success) continue;
+                if (!TryApplyRtpc(i, _rtpcValues[i])) continue;
                 _rtpcPending[i] = false;
             }
 
             FlushState();
         }
 
-        // ── 내부 ────────────────────────────────────────────────────────────────────────
+        // ── 내부: 상태 관리 (플랫폼 공통) ───────────────────────────────────────────────
+
+        private static void SetRtpc(Rtpc rtpc, float value)
+        {
+            var index = (int)rtpc;
+            _rtpcValues[index] = value;
+
+            if (!TryApplyRtpc(index, value))
+            {
+                // 마지막 값만 들고 있다가 준비된 프레임에 한 번 민다. 매 프레임 들어오는 값이라
+                // 큐에 쌓아 두는 것은 의미가 없고, 최신값 하나면 충분하다.
+                _rtpcPending[index] = true;
+                return;
+            }
+
+            _rtpcPending[index] = false;
+        }
+
+        private static void FlushState()
+        {
+            if (!_statePending) return;
+            if (!TryApplyState(_state)) return;
+            _statePending = false;
+        }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+
+        // ── 백엔드: WebGL (무음) ────────────────────────────────────────────────────────
+        //
+        // WebGL 플레이어 빌드에는 AK 런타임 어셈블리 4종이 들어가지 않는다(docs/webgl-build.md §2-1).
+        // 따라서 이 블록 안에는 Ak* 로 시작하는 식별자가 하나도 없어야 한다.
+        //
+        // 값은 위쪽 공통 층이 계속 들고 있다. 소리만 안 날 뿐 게임 상태 추적은 그대로 돌고,
+        // 나중에 Wwise WebGL 플랫폼을 깔거나 다른 백엔드를 붙일 때 이 네 개만 채우면 된다.
+
+        private static bool IsReady => false;
+
+        private static bool TryPostEvent(uint eventId) => false;
+
+        private static bool TryApplyRtpc(int index, float value) => false;
+
+        private static bool TryApplyState(GameAudioState state) => false;
+
+#else
+
+        // ── 백엔드: Wwise ───────────────────────────────────────────────────────────────
+
+        private const string HostName = "AudioDirector (Runtime)";
+
+        private static GameObject _host;
+        private static bool _banksLoaded;
+        private static bool _bankLoadFailed;
 
         /// <summary>
         /// 사운드 엔진이 살아 있고 이벤트를 걸 게임 오브젝트가 준비되었는가.
@@ -234,27 +294,18 @@ namespace Swarm.Audio
             return AkUnitySoundEngine.PostEvent(eventId, _host) != AkUnitySoundEngine.AK_INVALID_PLAYING_ID;
         }
 
-        private static void SetRtpc(Rtpc rtpc, float value)
+        private static bool TryApplyRtpc(int index, float value)
         {
-            var index = (int)rtpc;
-            _rtpcValues[index] = value;
-
-            if (!IsReady || AkUnitySoundEngine.SetRTPCValue(RtpcIds[index], value) != AKRESULT.AK_Success)
-            {
-                // 마지막 값만 들고 있다가 준비된 프레임에 한 번 민다. 매 프레임 들어오는 값이라
-                // 큐에 쌓아 두는 것은 의미가 없고, 최신값 하나면 충분하다.
-                _rtpcPending[index] = true;
-                return;
-            }
-
-            _rtpcPending[index] = false;
+            if (!IsReady) return false;
+            return AkUnitySoundEngine.SetRTPCValue(RtpcIds[index], value) == AKRESULT.AK_Success;
         }
 
-        private static void FlushState()
+        private static bool TryApplyState(GameAudioState state)
         {
-            if (!_statePending || !IsReady) return;
-            if (AkUnitySoundEngine.SetState(WwiseIds.States.Game_State.Group, StateIds[(int)_state]) != AKRESULT.AK_Success) return;
-            _statePending = false;
+            if (!IsReady) return false;
+            return AkUnitySoundEngine.SetState(WwiseIds.States.Game_State.Group, StateIds[(int)state]) == AKRESULT.AK_Success;
         }
+
+#endif
     }
 }

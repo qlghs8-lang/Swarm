@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <link rel="stylesheet" href="TemplateData/style.css">
+</head>
+<body>
+  <div class="shell">
+    <div class="frame">
+      <canvas id="unity-canvas" class="canvas" tabindex="-1"></canvas>
+      <div id="loader" class="loader">
+        <div class="title">{{{ PRODUCT_NAME }}}</div>
+        <div class="bar"><div id="fill" class="fill"></div></div>
+        <div id="pct" class="pct">LOADING 0%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">이동 WASD / 방향키 · 나머지는 자동</div>
+
+  <div id="warn" class="warn">
+    <b>키보드가 필요한 게임입니다</b>
+    <p>모바일 브라우저에서는 조작할 수 없습니다. PC 브라우저(Chrome 또는 Firefox)에서 열어 주세요.</p>
+  </div>
+
+  <div id="err" class="err"></div>
+
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
+    var loader = document.querySelector("#loader");
+    var fill   = document.querySelector("#fill");
+    var pct    = document.querySelector("#pct");
+    var errBox = document.querySelector("#err");
+
+    function fail(text) { errBox.style.display = "block"; errBox.textContent = text; }
+
+    // 터치 전용 기기는 애초에 플레이가 불가능하다. 로더를 받기 전에 끊어 수십 MB 낭비를 막는다.
+    if (/Android|iPhone|iPad|iPod|IEMobile|BlackBerry|Opera Mini/i.test(navigator.userAgent)) {
+      document.querySelector("#warn").style.display = "flex";
+    } else {
+      var buildUrl = "Build";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: function (msg, type) {
+          if (type === "error") { fail(msg); } else { console.warn(msg); }
+        }
+      };
+
+      var script = document.createElement("script");
+      script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (p) {
+          var v = Math.round(p * 100);
+          fill.style.width = v + "%";
+          pct.textContent = "LOADING " + v + "%";
+        }).then(function () {
+          loader.classList.add("done");
+          // 로드 직후 캔버스에 포커스를 준다 — 안 하면 첫 키 입력이 페이지로 흘러 스크롤된다.
+          canvas.focus();
+        }).catch(function (e) { fail("로드 실패: " + e); });
+      };
+      script.onerror = function () {
+        fail("로더를 받지 못했습니다.\n" +
+             "압축 빌드를 Content-Encoding 헤더 없는 서버에 올렸다면 " +
+             "Player Settings → Publishing Settings → Decompression Fallback 을 켜야 합니다.");
+      };
+      document.body.appendChild(script);
+
+      // 캔버스 밖을 클릭해도 게임이 계속 키를 받게.
+      document.addEventListener("click", function () { canvas.focus(); });
+      // 방향키/스페이스로 페이지가 스크롤되는 것을 막는다.
+      window.addEventListener("keydown", function (e) {
+        if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.key) !== -1) e.preventDefault();
+      }, { passive: false });
+    }
+  </script>
+</body>
+</html>
