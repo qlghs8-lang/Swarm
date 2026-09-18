@@ -28,12 +28,12 @@
 4. `.aseprite`를 Unity에 임포트하고 애니메이션 클립과 Animator Controller를 연결했습니다.
 5. 플레이어의 외형은 `CharacterDefinition`의 `defaultSprite`와 `animatorController`에 지정했습니다. 타이틀에서 각 캐릭터를 선택해 실제 전환을 확인했습니다.
 
-당시 제작 기록에는 궁수 Walk의 일부 프레임이 뒷모습으로 바뀌고, 마법사 Idle에서 지팡이가 사라지는 문제가 남아 있습니다. 생성 요청에 정면 유지와 소품 유지를 명시하고 결과 프레임을 다시 확인했습니다. 특정 프롬프트만으로 모든 결과의 일관성이 보장되는 것은 아닙니다.
+생성 과정에서 궁수 Walk의 일부 프레임이 뒷모습으로 바뀌거나 마법사 Idle에서 지팡이가 사라지는 문제가 있었습니다. 생성 요청에 정면 유지와 소품 유지를 명시하고, 프레임별로 방향·실루엣·소품을 확인하며 수정했습니다.
 
 ### 현재 연결 구조
 
 - 플레이어는 정면 스프라이트를 사용하고 `PlayerController`의 `SpriteRenderer.flipX`로 좌우를 전환합니다.
-- `CharacterDefinition.ApplyToPlayer()`가 선택한 캐릭터의 스프라이트와 컨트롤러를 적용합니다. 씬의 Player 외형만 바꾸는 것으로 캐릭터별 설정을 대신하지 않습니다.
+- `CharacterDefinition.ApplyToPlayer()`가 선택한 캐릭터의 스프라이트와 컨트롤러를 적용합니다. 캐릭터별 외형 설정은 이 에셋에서 관리합니다.
 - `ArcherRollWeapon.StartRoll()`이 `Animator.SetTrigger("Roll")`을 호출합니다.
 - 보스 이동 애니메이션 연결에는 현재 저장소의 `BossWalkSetup`을 사용합니다.
 
@@ -60,7 +60,7 @@
 
 코드·에셋: [BossSlamSetup](../Assets/_Project/Scripts/Editor/BossSlamSetup.cs) · [BossSlamAttack](../Assets/_Project/Scripts/Enemy/BossSlamAttack.cs) · [BossAttackHits](../Assets/_Project/Scripts/Enemy/BossAttackHits.cs) · [슬램 이펙트 프리팹](../Assets/_Project/Prefabs/Effect_BossSlam_Impact.prefab)
 
-### 현재 저장소의 연결 도구
+### 반복 연동을 위한 에디터 도구
 
 | Unity 메뉴 | 역할 | 코드 |
 | --- | --- | --- |
@@ -73,7 +73,7 @@
 
 ## 4. 에셋별 규격과 임포트 기준
 
-아래 값은 **2026-09-18 기준 원본 파일과 `.meta`에서 확인한 현재 설정**입니다. 새 에셋에 일괄 적용하는 공통 규격은 아닙니다. 캔버스 크기에는 투명 여백이 포함되며 실제 실루엣 크기와 다를 수 있습니다.
+에셋의 용도와 화면 비중에 따라 캔버스·PPU를 나누었습니다. 아래는 적용 중인 설정이며, 캔버스 크기는 투명 여백을 포함합니다.
 
 | 대상 | 소스 캔버스 | PPU | 비고 |
 | --- | --- | ---: | --- |
@@ -92,17 +92,17 @@
 ### 위치와 크기
 
 - 피벗은 에셋의 용도에 맞게 지정합니다. 캐릭터의 발 기준과 이펙트의 중심 기준을 구분하고, 프레임 전환·회전 시 이미지가 흔들리지 않는지 확인합니다.
-- 프레임을 잘라내는 영역과 캔버스 기준이 다를 수 있으므로, `.meta`의 피벗 값이 0~1을 벗어났다는 이유만으로 오류라고 판단하지 않습니다. 임포터 설정과 실제 렌더링 위치를 함께 확인합니다.
+- 트림된 프레임과 원본 캔버스의 좌표 기준을 함께 고려해 피벗을 맞춥니다. `.meta`의 수치와 임포터 설정, 실제 렌더링 위치를 함께 확인합니다.
 - 공격의 기준점이 필요할 때는 발 위치와 피해 판정 중심을 구분합니다. `PlayerStats.AttackOrigin`은 콜라이더 중심을 반환하도록 되어 있습니다.
-- 방향을 회전시키는 이펙트는 해당 무기 코드가 가정하는 원본 방향과 맞춥니다. 모든 이펙트에 같은 피벗·방향을 강제하지 않습니다.
+- 방향을 회전시키는 이펙트는 해당 무기 코드가 가정하는 원본 방향과 피벗에 맞춥니다.
 - PPU를 바꾸면 월드 표시 크기가 달라집니다. 기존 스케일, 공격 반경, 오프셋과 함께 확인합니다.
 
 ### 재임포트와 렌더링
 
-- Aseprite 원본을 다시 제작하거나 프레임 구성을 바꾼 뒤에는 참조와 재생 순서를 확인합니다. 모든 수정이 서브에셋 ID 변경을 일으킨다고 가정하지 않습니다.
+- Aseprite 원본을 다시 제작하거나 프레임 구성을 바꾼 뒤에는 스프라이트 참조와 재생 순서를 확인합니다.
 - 픽셀 경계가 필요한 에셋은 Point 필터와 압축 설정을 확인합니다. 프레임의 여백·트림·메시 설정도 실제 효과에 맞춰 확인합니다.
 - 바닥 경고 도형은 `SortingLayers.DECAL`, 공격 효과는 해당 렌더링 레이어를 사용합니다. 기본 레이어에 남아 바닥에 가려지지 않도록 확인합니다.
-- `MageBoltWeapon.WarmUpStrikeFlashShader()`와 `MageFireballWeapon.WarmUpFireballShader()`에는 투명한 이펙트를 한 프레임 준비하는 경로가 있습니다. 초기 표시 문제에 대응한 구현이며, 모든 플랫폼에서 셰이더 준비가 완료된다는 보장으로 해석하지 않습니다.
+- `MageBoltWeapon.WarmUpStrikeFlashShader()`와 `MageFireballWeapon.WarmUpFireballShader()`에는 투명한 이펙트를 한 프레임 준비하는 경로가 있습니다. 첫 표시를 준비하기 위한 경로이며, 플랫폼별 첫 발동 시점의 표시는 별도 확인 대상입니다.
 
 ## 5. UI·배경·픽업
 
@@ -123,9 +123,9 @@ UI·타일·픽업은 도형·팔레트·좌표를 지정하는 방식으로 제
 
 ## 6. 제작 도구와 외부 리소스
 
-- **생성형 AI:** PixelLab 및 GPT·Gemini 기반 이미지 생성·레퍼런스를 활용했습니다. ‘전량 수작업’으로 표현하지 않습니다.
-- **편집·생성 도구:** Aseprite, MCP 기반 조작, Lua 스크립트를 활용했습니다. 제작 방식은 위 카테고리별 기록과 함께 설명합니다.
+- **생성형 AI:** PixelLab 및 GPT·Gemini로 캐릭터 초안, 애니메이션, 이펙트 레퍼런스를 생성했습니다.
+- **편집·생성 도구:** Aseprite, MCP 기반 조작, Lua 스크립트로 프레임 정리와 규격에 맞춘 제작을 진행했습니다.
 - **폰트:** 외부 폰트인 Galmuri의 프로젝트용 파일 `Galmuri11-Swarm.ttf`를 포함합니다. 저장소의 [Galmuri 라이선스 원문](../Assets/_Project/Fonts/Galmuri-OFL.txt)은 SIL Open Font License 1.1을 명시합니다.
 - **WebGL 한글 표시:** 씬·프리팹의 폰트 지정과 런타임 UI의 `UiFont.Current`를 연결했습니다. 코드에서 생성하는 설정·버프 UI도 같은 폰트를 사용하도록 구성했습니다([UiFont](../Assets/_Project/Scripts/UI/UiFont.cs), [WebGL 문서](webgl-build.md)).
 
-제작 도구와 외부 리소스의 출처를 구분해 기록합니다. 폰트 등 함께 배포하는 외부 리소스의 라이선스 원문도 저장소에 보관합니다.
+함께 배포하는 외부 리소스의 라이선스 원문은 저장소에 보관합니다.
