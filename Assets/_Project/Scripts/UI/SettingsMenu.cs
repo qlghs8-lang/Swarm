@@ -645,16 +645,12 @@ namespace Swarm.UI
             rect.offsetMax = Vector2.zero;
         }
 
-        private static Font _font;
-
-        /// <summary>씬의 다른 Text들이 쓰는 것과 같은 유니티 내장 폰트.</summary>
-        private static Font BuiltinFont()
-        {
-            if (_font != null) return _font;
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (_font == null) _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            return _font;
-        }
+        /// <summary>
+        /// 씬의 다른 Text들이 쓰는 것과 같은 폰트. 내장 폰트를 직접 부르지 않는다 —
+        /// 거기에는 한글 글리프가 없어서 WebGL 빌드에서 이 메뉴의 라벨이 전부 빈칸이 된다.
+        /// 자세한 것은 <see cref="UiFont"/>.
+        /// </summary>
+        private static Font BuiltinFont() => UiFont.Current;
 
         private static Sprite _roundedSprite;
         private static Sprite _circleSprite;

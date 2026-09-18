@@ -160,7 +160,7 @@ namespace Swarm.UI
                 countRect.offsetMax = new Vector2(-3f, 0f);
 
                 slot.Count = countGo.GetComponent<Text>();
-                slot.Count.font = countFont != null ? countFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                slot.Count.font = countFont != null ? countFont : UiFont.Current;
                 slot.Count.fontSize = countFontSize;
                 slot.Count.fontStyle = FontStyle.Bold;
                 slot.Count.alignment = TextAnchor.LowerRight;
